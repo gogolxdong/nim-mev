@@ -1,0 +1,4 @@
+--hints:off
+--warnings:off
+--gc:orc
+--define:release
