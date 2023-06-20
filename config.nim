@@ -23,10 +23,8 @@ import
 export stewNet
 
 const
-  # TODO: fix this agent-string format to match other
-  # eth clients format
   NimbusIdent* = "$# v$# [$#: $#, $#, $#, $#]" % [
-    "devp2p",
+    "nimmev",
     "0.1",
     hostOS,
     hostCPU,

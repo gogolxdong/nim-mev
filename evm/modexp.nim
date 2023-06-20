@@ -4,7 +4,7 @@ import
 from os import DirSep, AltSep
 
 const
-  vendorPath  = currentSourcePath.rsplit({DirSep, AltSep}, 3)[0] & "/vendor"
+  vendorPath  = currentSourcePath
   srcPath = vendorPath & "/libtommath"
 
 {.passc: "-DMP_32BIT"}

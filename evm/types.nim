@@ -1,21 +1,9 @@
-# Nimbus
-# Copyright (c) 2018 Status Research & Development GmbH
-# Licensed under either of
-#  * Apache License, version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
-#    http://www.apache.org/licenses/LICENSE-2.0)
-#  * MIT license ([LICENSE-MIT](LICENSE-MIT) or
-#    http://opensource.org/licenses/MIT)
-# at your option. This file may not be copied, modified, or distributed except
-# according to those terms.
-
 import
   std/[json, sets],
   chronos,
   json_rpc/rpcclient,
   "."/[stack, memory, code_stream],
   ./interpreter/[gas_costs, op_codes],
-  ./async/data_sources,
-  ../db/accounts_cache,
   ../common/[common, evmforks]
 
 {.push raises: [].}
@@ -48,14 +36,12 @@ type
     flags*         : set[VMFlag]
     tracer*        : TransactionTracer
     receipts*      : seq[Receipt]
-    stateDB*       : AccountsCache
     cumulativeGasUsed*: GasInt
     txOrigin*      : EthAddress
     txGasPrice*    : GasInt
     gasCosts*      : GasCosts
     fork*          : EVMFork
     minerAddress*  : EthAddress
-    asyncFactory*  : AsyncOperationFactory
 
   TracerFlags* {.pure.} = enum
     EnableTracing
@@ -87,7 +73,7 @@ type
     output*:                seq[byte]
     returnData*:            seq[byte]
     error*:                 Error
-    savePoint*:             SavePoint
+    # savePoint*:             SavePoint
     instr*:                 Op
     opIndex*:               int
     when defined(evmc_enabled):

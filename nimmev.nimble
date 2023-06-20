@@ -1,6 +1,6 @@
 mode = ScriptMode.Verbose
 
-packageName   = "nimdevp2p"
+packageName   = "nimmev"
 version       = "0.1.0"
 author        = "Sheldon"
 description   = "An Ethereum 2.0 Sharding Client for Resource-Restricted Devices"

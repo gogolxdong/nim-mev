@@ -1,14 +1,7 @@
-# Nimbus
-# Copyright (c) 2018 Status Research & Development GmbH
-# Licensed under either of
-#  * Apache License, version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-#  * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
-# at your option. This file may not be copied, modified, or distributed except according to those terms.
-
 import
   math, eth/common/eth_types,
   ./utils/[macros_gen_opcodes, utils_numeric],
-  ./op_codes, ../../errors
+  ./op_codes, ../../errors, ../../common/evmforks
 
 when defined(evmc_enabled):
   import evmc/evmc
@@ -102,27 +95,20 @@ type
     of GckComplex:
       c_handler*: proc(value: UInt256, gasParams: GasParams): GasResult
                     {.nimcall, gcsafe, raises: [CatchableError].}
-      # We use gasCost/gasRefund for:
-      #   - Properly log and order cost and refund (for Sstore especially)
-      #   - Allow to use unsigned integer in the future
-      #   - CALL instruction requires passing the child message gas (Ccallgas in yellow paper)
 
   GasCosts* = array[Op, GasCost]
 
 const
-  # From EIP-2929
   ColdSloadCost*         = 2100
   ColdAccountAccessCost* = 2600
   WarmStorageReadCost*   = 100
 
-  # From EIP-2930 (Berlin).
   ACCESS_LIST_STORAGE_KEY_COST* = 1900.GasInt
   ACCESS_LIST_ADDRESS_COST*     = 2400.GasInt
 
 
 when defined(evmc_enabled):
   type
-    # The gas cost specification for storage instructions.
     StorageCostSpec = object
       netCost   : bool   # Is this net gas cost metering schedule?
       warmAccess: int16  # Storage warm access cost, YP: G_{warmaccess}
@@ -134,9 +120,7 @@ when defined(evmc_enabled):
       gasCost*  : int16
       gasRefund*: int16
 
-  # Table of gas cost specification for storage instructions per EVM revision.
   func storageCostSpec(): array[EVMFork, StorageCostSpec] {.compileTime.} =
-    # Legacy cost schedule.
     const revs = [
       FkFrontier, FkHomestead, FkTangerine,
       FkSpurious, FkByzantium, FkPetersburg]
