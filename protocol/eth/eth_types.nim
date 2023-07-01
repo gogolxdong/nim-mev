@@ -38,7 +38,7 @@ const
   maxHeadersFetch* = 192
 
 proc notImplemented(name: string) =
-  debug "Method not implemented", meth = name
+  info "Method not implemented", meth = name
 
 method getStatus*(ctx: EthWireBase): EthState
     {.base, gcsafe, raises: [CatchableError].} =
@@ -65,6 +65,7 @@ method handleNewBlock*(ctx: EthWireBase, peer: Peer, blk: EthBlock, totalDifficu
 
 method handleAnnouncedTxs*(ctx: EthWireBase, peer: Peer, txs: openArray[Transaction])
     {.base, gcsafe, raises: [CatchableError].} =
+  info "handleAnnouncedTxs", peer=peer, txs=txs
   notImplemented("handleAnnouncedTxs")
 
 method handleAnnouncedTxsHashes*(ctx: EthWireBase, peer: Peer, txHashes: openArray[Hash256]) {.base, gcsafe.} =
