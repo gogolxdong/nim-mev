@@ -79,7 +79,7 @@ p2pProtocol eth66(version = ethVersion,
       bestHash  = short(status.bestBlockHash),
       networkId = network.networkId,
       genesis   = short(status.genesisHash),
-      forkHash  = status.forkId.forkHash.toHex,
+      forkHash  = status.forkId.forkHash,
       forkNext  = status.forkId.forkNext
 
     let m = await peer.status(ethVersion,

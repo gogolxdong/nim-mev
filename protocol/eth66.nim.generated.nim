@@ -287,11 +287,11 @@ template status*(peer: Peer; ethVersionArg: uint; networkId: NetworkId;
                  totalDifficulty: DifficultyInt; bestHash: Hash256;
                  genesisHash: Hash256; forkId: ChainForkId;
                  timeout: Duration = milliseconds(10000'i64)): Future[statusObj] =
-  let peer_5402263643 = peer
+  let peer_5452595291 = peer
   let sendingFuture`gensym61 = statusRawSender(peer, ethVersionArg, networkId,
       totalDifficulty, bestHash, genesisHash, forkId)
-  handshakeImpl(peer_5402263643, sendingFuture`gensym61,
-                nextMsg(peer_5402263643, statusObj), timeout)
+  handshakeImpl(peer_5452595291, sendingFuture`gensym61,
+                nextMsg(peer_5452595291, statusObj), timeout)
 
 proc newBlockHashes*(peerOrResponder: Peer;
                      hashes: openArray[NewBlockHashesAnnounce]): Future[void] {.
@@ -956,8 +956,7 @@ proc eth66PeerConnected(peer: Peer) {.gcsafe, async.} =
     status = ctx.getStatus()
   info trEthSendSending & "Status (0x00)", peer, td = status.totalDifficulty,
        bestHash = short(status.bestBlockHash), networkId = network.networkId,
-       genesis = short(status.genesisHash),
-       forkHash = status.forkId.forkHash.toHex,
+       genesis = short(status.genesisHash), forkHash = status.forkId.forkHash,
        forkNext = status.forkId.forkNext
   let m = await peer.status(ethVersion, network.networkId,
                             status.totalDifficulty, status.bestBlockHash,
