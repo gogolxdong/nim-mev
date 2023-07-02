@@ -82,39 +82,39 @@ p2pProtocol eth66(version = ethVersion,
       forkHash  = status.forkId.forkHash,
       forkNext  = status.forkId.forkNext
 
-    let m = await peer.status(ethVersion,
+    let remote = await peer.status(ethVersion,
                               network.networkId,
                               status.totalDifficulty,
                               status.bestBlockHash,
                               status.genesisHash,
                               status.forkId,
                               timeout = chronos.seconds(10))
-
+    echo "remote:", remote
     when trEthTraceHandshakesOk:
       info "Handshake: Local and remote networkId",
-        local=network.networkId, remote=m.networkId
+        local=network.networkId, remote=remote.networkId
       info "Handshake: Local and remote genesisHash",
-        local=status.genesisHash, remote=m.genesisHash
+        local=status.genesisHash, remote=remote.genesisHash
       info "Handshake: Local and remote forkId",
         local=(status.forkId.forkHash.toHex & "/" & $status.forkId.forkNext),
-        remote=(m.forkId.forkHash.toHex & "/" & $m.forkId.forkNext)
+        remote=(remote.forkId.forkHash.toHex & "/" & $remote.forkId.forkNext)
 
-    if m.networkId != network.networkId:
+    if remote.networkId != network.networkId:
       info "Peer for a different network (networkId)", peer,
-        expectNetworkId=network.networkId, gotNetworkId=m.networkId
+        expectNetworkId=network.networkId, gotNetworkId=remote.networkId
       raise newException(
         UselessPeerError, "Eth handshake for different network")
 
-    if m.genesisHash != status.genesisHash:
+    if remote.genesisHash != status.genesisHash:
       info "Peer for a different network (genesisHash)", peer,
-        expectGenesis=short(status.genesisHash), gotGenesis=short(m.genesisHash)
+        expectGenesis=short(status.genesisHash), gotGenesis=short(remote.genesisHash)
       # raise newException(
       #   UselessPeerError, "Eth handshake for different network")
 
     info "Peer matches our network", peer
     peer.state.initialized = true
-    peer.state.bestDifficulty = m.totalDifficulty
-    peer.state.bestBlockHash = m.bestHash
+    peer.state.bestDifficulty = remote.totalDifficulty
+    peer.state.bestBlockHash = remote.bestHash
 
   handshake:
     # User message 0x00: Status.

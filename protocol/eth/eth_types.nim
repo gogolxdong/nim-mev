@@ -43,40 +43,44 @@ proc notImplemented(name: string) =
 method getStatus*(ctx: EthWireBase): EthState
     {.base, gcsafe, raises: [CatchableError].} =
     EthState(totalDifficulty:1.u256, genesisHash: Hash256.fromHex("0x0d21840abff46b96c84b2ac9e10e4f5cdaeb5693cb665db62a2f3b02d2d57b5b"), forkId: ChainForkId(forkHash:[byte(41),149,197,42], forkNext: 0.u256))
-  # notImplemented("getStatus")
 
-method getReceipts*(ctx: EthWireBase, hashes: openArray[Hash256]): seq[seq[Receipt]]
-    {.base, gcsafe, raises: [CatchableError].} =
-  notImplemented("getReceipts")
+method getReceipts*(ctx: EthWireBase, hashes: openArray[Hash256]): seq[seq[Receipt]] {.base, gcsafe, raises: [CatchableError].} =
+  {.gcsafe.}:
+    info "getReceipts", hashes=hashes
+
 
 method getPooledTxs*(ctx: EthWireBase, hashes: openArray[Hash256]): seq[Transaction] {.base, gcsafe.} =
-  notImplemented("getPooledTxs")
+  {.gcsafe.}:
+    info "getPooledTxs", hashes=hashes
 
 method getBlockBodies*(ctx: EthWireBase, hashes: openArray[Hash256]): seq[BlockBody] {.base, gcsafe, raises: [CatchableError].} =
-  notImplemented("getBlockBodies")
+  {.gcsafe.}:
+    info "getBlockBodies", hashes=hashes
 
-method getBlockHeaders*(ctx: EthWireBase, req: BlocksRequest): seq[BlockHeader]
-    {.base, gcsafe, raises: [CatchableError].} =
-  notImplemented("getBlockHeaders")
 
-method handleNewBlock*(ctx: EthWireBase, peer: Peer, blk: EthBlock, totalDifficulty: DifficultyInt)
-    {.base, gcsafe, raises: [CatchableError].} =
-  notImplemented("handleNewBlock")
+method getBlockHeaders*(ctx: EthWireBase, req: BlocksRequest): seq[BlockHeader] {.base, gcsafe, raises: [CatchableError].} =
+  {.gcsafe.}:
+    info "getBlockHeaders", req=req
 
-method handleAnnouncedTxs*(ctx: EthWireBase, peer: Peer, txs: openArray[Transaction])
-    {.base, gcsafe, raises: [CatchableError].} =
-  info "handleAnnouncedTxs", peer=peer, txs=txs
-  notImplemented("handleAnnouncedTxs")
+
+method handleNewBlock*(ctx: EthWireBase, peer: Peer, blk: EthBlock, totalDifficulty: DifficultyInt) {.base, gcsafe, raises: [CatchableError].} =
+  {.gcsafe.}:
+    info "handleNewBlock", peer=peer, blk=blk, totalDifficulty=totalDifficulty
+
+method handleAnnouncedTxs*(ctx: EthWireBase, peer: Peer, txs: openArray[Transaction]) {.base, gcsafe, raises: [CatchableError].} =
+  {.gcsafe.}:
+    info "handleAnnouncedTxs", peer=peer, txs=txs
 
 method handleAnnouncedTxsHashes*(ctx: EthWireBase, peer: Peer, txHashes: openArray[Hash256]) {.base, gcsafe.} =
-  notImplemented("handleAnnouncedTxsHashes")
+  {.gcsafe.}:
+    info "handleAnnouncedTxsHashes", peer=peer, txHashes=txHashes
 
-method handleNewBlockHashes*(ctx: EthWireBase, peer: Peer, hashes: openArray[NewBlockHashesAnnounce])
-    {.base, gcsafe, raises: [CatchableError].} =
-  notImplemented("handleNewBlockHashes")
+method handleNewBlockHashes*(ctx: EthWireBase, peer: Peer, hashes: openArray[NewBlockHashesAnnounce]) {.base, gcsafe, raises: [CatchableError].} =
+  {.gcsafe.}:
+    info "handleNewBlockHashes", peer=peer, hashes=hashes
 
 method getStorageNodes*(ctx: EthWireBase, hashes: openArray[Hash256]): seq[Blob] {.base, gcsafe.} =
-  notImplemented("getStorageNodes")
+  info "getStorageNodes", hashes=hashes
 
 method handleNodeData*(ctx: EthWireBase, peer: Peer, data: openArray[Blob]) {.base, gcsafe.} =
-  notImplemented("handleNodeData")
+  info "handleNodeData", peer=peer, data=data

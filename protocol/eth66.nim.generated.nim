@@ -287,11 +287,11 @@ template status*(peer: Peer; ethVersionArg: uint; networkId: NetworkId;
                  totalDifficulty: DifficultyInt; bestHash: Hash256;
                  genesisHash: Hash256; forkId: ChainForkId;
                  timeout: Duration = milliseconds(10000'i64)): Future[statusObj] =
-  let peer_5452595290 = peer
+  let peer_5435818074 = peer
   let sendingFuture`gensym61 = statusRawSender(peer, ethVersionArg, networkId,
       totalDifficulty, bestHash, genesisHash, forkId)
-  handshakeImpl(peer_5452595290, sendingFuture`gensym61,
-                nextMsg(peer_5452595290, statusObj), timeout)
+  handshakeImpl(peer_5435818074, sendingFuture`gensym61,
+                nextMsg(peer_5435818074, statusObj), timeout)
 
 proc newBlockHashes*(peerOrResponder: Peer;
                      hashes: openArray[NewBlockHashesAnnounce]): Future[void] {.
@@ -958,30 +958,31 @@ proc eth66PeerConnected(peer: Peer) {.gcsafe, async.} =
        bestHash = short(status.bestBlockHash), networkId = network.networkId,
        genesis = short(status.genesisHash), forkHash = status.forkId.forkHash,
        forkNext = status.forkId.forkNext
-  let m = await peer.status(ethVersion, network.networkId,
-                            status.totalDifficulty, status.bestBlockHash,
-                            status.genesisHash, status.forkId,
-                            timeout = chronos.seconds(10))
+  let remote = await peer.status(ethVersion, network.networkId,
+                                 status.totalDifficulty, status.bestBlockHash,
+                                 status.genesisHash, status.forkId,
+                                 timeout = chronos.seconds(10))
+  echo "remote:", remote
   when trEthTraceHandshakesOk:
     info "Handshake: Local and remote networkId", local = network.networkId,
-         remote = m.networkId
+         remote = remote.networkId
     info "Handshake: Local and remote genesisHash", local = status.genesisHash,
-         remote = m.genesisHash
+         remote = remote.genesisHash
     info "Handshake: Local and remote forkId", local = (
-        status.forkId.forkHash.toHex & "/" & $status.forkId.forkNext),
-         remote = (m.forkId.forkHash.toHex & "/" & $m.forkId.forkNext)
-  if m.networkId != network.networkId:
+        status.forkId.forkHash.toHex & "/" & $status.forkId.forkNext), remote = (
+        remote.forkId.forkHash.toHex & "/" & $remote.forkId.forkNext)
+  if remote.networkId != network.networkId:
     info "Peer for a different network (networkId)", peer,
-         expectNetworkId = network.networkId, gotNetworkId = m.networkId
+         expectNetworkId = network.networkId, gotNetworkId = remote.networkId
     raise newException(UselessPeerError, "Eth handshake for different network")
-  if m.genesisHash != status.genesisHash:
+  if remote.genesisHash != status.genesisHash:
     info "Peer for a different network (genesisHash)", peer,
          expectGenesis = short(status.genesisHash),
-         gotGenesis = short(m.genesisHash)
+         gotGenesis = short(remote.genesisHash)
   info "Peer matches our network", peer
   peer.state.initialized = true
-  peer.state.bestDifficulty = m.totalDifficulty
-  peer.state.bestBlockHash = m.bestHash
+  peer.state.bestDifficulty = remote.totalDifficulty
+  peer.state.bestBlockHash = remote.bestHash
 
 setEventHandlers(eth66Protocol, eth66PeerConnected, nil)
 registerProtocol(eth66Protocol)

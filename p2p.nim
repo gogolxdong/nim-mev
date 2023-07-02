@@ -34,6 +34,7 @@ var rng = newRng()
 var peer:Peer
 var node = setupTestNode(rng, eth )
 node.startListening()
+
 proc controlCHandler() {.noconv.} =
   echo "\nCtrl+C pressed. Waiting for a graceful shutdown."
   node.stopListening()
