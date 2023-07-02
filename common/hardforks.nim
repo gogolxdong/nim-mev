@@ -374,7 +374,7 @@ func calculateForkId(next: array[HardFork, uint64], fork: HardFork,
   result.nextFork = getNextFork(next, fork)
 
   if result.nextFork != prevFork:
-    result.crc = crc32(prevCRC, toBytesBE(prevFork))
+    result.crc = crc32(prevCRC, toBytesBE(prevFork.u256))
   else:
     result.crc = prevCRC
 

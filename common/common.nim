@@ -18,11 +18,12 @@ import
   ./evmforks,
   ./genesis,
   ../utils/[utils, ec_recover],
-  ../constants,
-  ../errors
+  ../db/[db_chain, storage_types],
+  ../core/[pow, clique, casper]
 
 export
   chain_config,
+  db_chain,
   options,
   evmforks,
   hardforks,
@@ -36,22 +37,85 @@ type
     highest: BlockNumber
 
   SyncReqNewHeadCB* = proc(header: BlockHeader) {.gcsafe, raises: [].}
+    ## Update head for syncing
 
   CommonRef* = ref object
+    # all purpose storage
+    db: ChainDBRef
+
+    # prune underlying state db?
     pruneTrie: bool
+
+    # block chain config
     config: ChainConfig
+
+    # cache of genesis
     genesisHash: KeccakHash
     genesisHeader: BlockHeader
+
+    # map block number and ttd and time to
+    # HardFork
     forkTransitionTable: ForkTransitionTable
+
+    # Eth wire protocol need this
     forkIds: array[HardFork, ForkID]
     networkId: NetworkId
-    currentFork: HardFork
-    startOfHistory: Hash256
 
-proc hardForkTransition*(com: CommonRef, forkDeterminer: ForkDeterminationInfo)
+    # synchronizer need this
+    syncProgress: SyncProgress
+
+    # current hard fork, updated after calling `hardForkTransition`
+    currentFork: HardFork
+
+    # one of POW/POA/POS, updated after calling `hardForkTransition`
+    consensusType: ConsensusType
+
+    syncReqNewHead: SyncReqNewHeadCB
+      ## Call back function for the sync processor. This function stages
+      ## the arguent header to a private aerea for subsequent processing.
+
+    syncReqRelaxV2: bool
+      ## Allow processing of certain RPC/V2 messages type while syncing (i.e.
+      ## `syncReqNewHead` is set.) although `shanghaiTime` is unavailable
+      ## or has not reached, yet.
+
+    startOfHistory: Hash256
+      ## This setting is needed for resuming blockwise syncying after
+      ## installing a snapshot pivot. The default value for this field is
+      ## `GENESIS_PARENT_HASH` to start at the very beginning.
+
+    pow: PowRef
+      ## Wrapper around `hashimotoLight()` and lookup cache
+
+    poa: Clique
+      ## For non-PoA networks this descriptor is ignored.
+
+    pos: CasperRef
+      ## Proof Of Stake descriptor
+
+# ------------------------------------------------------------------------------
+# Forward declarations
+# ------------------------------------------------------------------------------
+
+proc hardForkTransition*(
+  com: CommonRef, forkDeterminer: ForkDeterminationInfo)
   {.gcsafe, raises: [].}
 
+func cliquePeriod*(com: CommonRef): int
 
+func cliqueEpoch*(com: CommonRef): int
+
+# ------------------------------------------------------------------------------
+# Private helper functions
+# ------------------------------------------------------------------------------
+
+proc consensusTransition(com: CommonRef, fork: HardFork) =
+  if fork >= MergeFork:
+    com.consensusType = ConsensusType.POS
+  else:
+    # restore consensus type to original config
+    # this could happen during reorg
+    com.consensusType = com.config.consensusType
 
 proc setForkId(com: CommonRef, blockZero: BlockHeader) =
   com.genesisHash = blockZero.blockHash
@@ -66,6 +130,7 @@ proc daoCheck(conf: ChainConfig) =
     conf.daoForkBlock = conf.homesteadBlock
 
 proc init(com      : CommonRef,
+          db       : TrieDatabaseRef,
           pruneTrie: bool,
           networkId: NetworkId,
           config   : ChainConfig,
@@ -73,51 +138,121 @@ proc init(com      : CommonRef,
 
   config.daoCheck()
 
+  com.db          = ChainDBRef.new(db)
+  com.pruneTrie   = pruneTrie
   com.config      = config
   com.forkTransitionTable = config.toForkTransitionTable()
   com.networkId   = networkId
+  com.syncProgress= SyncProgress()
 
+  # com.currentFork and com.consensusType
+  # is set by hardForkTransition.
+  # set it before creating genesis block
+  # TD need to be some(0.u256) because it can be the genesis
+  # already at the MergeFork
   const TimeZero = fromUnix(0)
   com.hardForkTransition(ForkDeterminationInfo(blockNumber: 0.toBlockNumber, td: some(0.u256), time: some(TimeZero)))
 
+  # com.forkIds and com.blockZeroHash is set
+  # by setForkId
   if genesis.isNil.not:
     com.genesisHeader = toGenesisHeader(genesis,
-      com.currentFork)
+      com.currentFork, com.db.db)
     com.setForkId(com.genesisHeader)
+
+  # Initalise the PoA state regardless of whether it is needed on the current
+  # network. For non-PoA networks this descriptor is ignored.
+  com.poa = newClique(com.db, com.cliquePeriod, com.cliqueEpoch)
+
+  # Always initialise the PoW epoch cache even though it migh no be used
+  com.pow = PowRef.new
+  com.pos = CasperRef.new
+
+  # By default, history begins at genesis.
   com.startOfHistory = GENESIS_PARENT_HASH
+
+proc getTd(com: CommonRef, blockHash: Hash256): Option[DifficultyInt] =
+  var td: DifficultyInt
+  if not com.db.getTd(blockHash, td):
+    # TODO: Is this really ok?
+    none[DifficultyInt]()
+  else:
+    some(td)
 
 proc needTdForHardForkDetermination(com: CommonRef): bool =
   let t = com.forkTransitionTable.mergeForkTransitionThreshold
   t.blockNumber.isNone and t.ttd.isSome
 
 proc getTdIfNecessary(com: CommonRef, blockHash: Hash256): Option[DifficultyInt] =
+  if needTdForHardForkDetermination(com):
+    getTd(com, blockHash)
+  else:
     none[DifficultyInt]()
 
+# ------------------------------------------------------------------------------
+# Public constructors
+# ------------------------------------------------------------------------------
+
 proc new*(_: type CommonRef,
+          db: TrieDatabaseRef,
           pruneTrie: bool = true,
           networkId: NetworkId = MainNet,
           params = networkParams(MainNet)): CommonRef
             {.gcsafe, raises: [CatchableError].} =
 
+  ## If genesis data is present, the forkIds will be initialized
+  ## empty data base also initialized with genesis block
   new(result)
-  result.init(pruneTrie,networkId,params.config,params.genesis)
+  result.init(
+    db,
+    pruneTrie,
+    networkId,
+    params.config,
+    params.genesis)
 
-proc new*(_: type CommonRef, config: ChainConfig, pruneTrie: bool = true, networkId: NetworkId = MainNet): CommonRef {.gcsafe, raises: [CatchableError].} =
+proc new*(_: type CommonRef,
+          db: TrieDatabaseRef,
+          config: ChainConfig,
+          pruneTrie: bool = true,
+          networkId: NetworkId = MainNet): CommonRef
+            {.gcsafe, raises: [CatchableError].} =
+
+  ## There is no genesis data present
+  ## Mainly used for testing without genesis
   new(result)
-  result.init(pruneTrie,networkId,config,nil)
+  result.init(
+    db,
+    pruneTrie,
+    networkId,
+    config,
+    nil)
 
-proc clone*(com: CommonRef): CommonRef =
+proc clone*(com: CommonRef, db: TrieDatabaseRef): CommonRef =
+  ## clone but replace the db
+  ## used in EVM tracer whose db is CaptureDB
   CommonRef(
+    db           : ChainDBRef.new(db),
     pruneTrie    : com.pruneTrie,
     config       : com.config,
     forkTransitionTable: com.forkTransitionTable,
     forkIds      : com.forkIds,
     genesisHash  : com.genesisHash,
     genesisHeader: com.genesisHeader,
+    syncProgress : com.syncProgress,
     networkId    : com.networkId,
     currentFork  : com.currentFork,
+    consensusType: com.consensusType,
+    pow          : com.pow,
+    poa          : com.poa,
+    pos          : com.pos
   )
 
+proc clone*(com: CommonRef): CommonRef =
+  com.clone(com.db.db)
+
+# ------------------------------------------------------------------------------
+# Public functions
+# ------------------------------------------------------------------------------
 
 func toHardFork*(
     com: CommonRef, forkDeterminer: ForkDeterminationInfo): HardFork =
@@ -126,8 +261,14 @@ func toHardFork*(
 proc hardForkTransition(
     com: CommonRef, forkDeterminer: ForkDeterminationInfo)
     {.gcsafe, raises: [].} =
+  ## When consensus type already transitioned to POS,
+  ## the storage can choose not to store TD anymore,
+  ## at that time, TD is no longer needed to find a fork
+  ## TD only needed during transition from POW/POA to POS.
+  ## Same thing happen before London block, TD can be ignored.
   let fork = com.toHardFork(forkDeterminer)
   com.currentFork = fork
+  com.consensusTransition(fork)
 
 proc hardForkTransition*(
     com: CommonRef,
@@ -171,8 +312,14 @@ func isLondon*(com: CommonRef, number: BlockNumber, timestamp: EthTime): bool =
 func forkGTE*(com: CommonRef, fork: HardFork): bool =
   com.currentFork >= fork
 
+# TODO: move this consensus code to where it belongs
 proc minerAddress*(com: CommonRef; header: BlockHeader): EthAddress
     {.gcsafe, raises: [CatchableError].} =
+  if com.consensusType != ConsensusType.POA:
+    # POW and POS return header.coinbase
+    return header.coinbase
+
+  # POA return ecRecover
   let account = header.ecRecover
   if account.isErr:
     let msg = "Could not recover account address: " & $account.error
@@ -181,17 +328,79 @@ proc minerAddress*(com: CommonRef; header: BlockHeader): EthAddress
   account.value
 
 func forkId*(com: CommonRef, forkDeterminer: ForkDeterminationInfo): ForkID {.gcsafe.} =
+  ## EIP 2364/2124
   let fork = com.toHardFork(forkDeterminer)
   com.forkIds[fork]
 
 func isEIP155*(com: CommonRef, number: BlockNumber): bool =
   com.config.eip155Block.isSome and number >= com.config.eip155Block.get
 
+proc isBlockAfterTtd*(com: CommonRef, header: BlockHeader): bool
+                      {.gcsafe, raises: [CatchableError].} =
+  if com.config.terminalTotalDifficulty.isNone:
+    return false
+
+  let
+    ttd = com.config.terminalTotalDifficulty.get()
+    ptd = com.db.getScore(header.parentHash)
+    td  = ptd + header.difficulty
+  ptd >= ttd and td >= ttd
+
 func isShanghaiOrLater*(com: CommonRef, t: EthTime): bool =
   com.config.shanghaiTime.isSome and t >= com.config.shanghaiTime.get
 
+func isCancunOrLater*(com: CommonRef, t: EthTime): bool =
+  com.config.cancunTime.isSome and t >= com.config.cancunTime.get
+
+proc consensus*(com: CommonRef, header: BlockHeader): ConsensusType
+                {.gcsafe, raises: [CatchableError].} =
+  if com.isBlockAfterTtd(header):
+    return ConsensusType.POS
+
+  return com.config.consensusType
+
+proc initializeEmptyDb*(com: CommonRef)
+    {.gcsafe, raises: [CatchableError].} =
+  let trieDB = com.db.db
+  if canonicalHeadHashKey().toOpenArray notin trieDB:
+    trace "Writing genesis to DB"
+    doAssert(com.genesisHeader.blockNumber.isZero,
+      "can't commit genesis block with number > 0")
+    discard com.db.persistHeaderToDb(com.genesisHeader,
+      com.consensusType == ConsensusType.POS)
+    doAssert(canonicalHeadHashKey().toOpenArray in trieDB)
+
+proc syncReqNewHead*(com: CommonRef; header: BlockHeader)
+    {.gcsafe, raises: [].} =
+  ## Used by RPC to update the beacon head for snap sync
+  if not com.syncReqNewHead.isNil:
+    com.syncReqNewHead(header)
+
+# ------------------------------------------------------------------------------
+# Getters
+# ------------------------------------------------------------------------------
+
 func startOfHistory*(com: CommonRef): Hash256 =
+  ## Getter
   com.startOfHistory
+
+func poa*(com: CommonRef): Clique =
+  ## Getter
+  com.poa
+
+func pow*(com: CommonRef): PowRef =
+  ## Getter
+  com.pow
+
+func pos*(com: CommonRef): CasperRef =
+  ## Getter
+  com.pos
+
+func db*(com: CommonRef): ChainDBRef =
+  com.db
+
+func consensus*(com: CommonRef): ConsensusType =
+  com.consensusType
 
 func eip150Block*(com: CommonRef): Option[BlockNumber] =
   com.config.eip150Block
@@ -219,6 +428,7 @@ func cliqueEpoch*(com: CommonRef): int =
 func pruneTrie*(com: CommonRef): bool =
   com.pruneTrie
 
+
 func chainId*(com: CommonRef): ChainId =
   com.config.chainId
 
@@ -229,14 +439,70 @@ func blockReward*(com: CommonRef): UInt256 =
   BlockRewards[com.currentFork]
 
 func genesisHash*(com: CommonRef): Hash256 =
+  ## Getter
   com.genesisHash
 
 func genesisHeader*(com: CommonRef): BlockHeader =
+  ## Getter
   com.genesisHeader
 
+func syncStart*(com: CommonRef): BlockNumber =
+  com.syncProgress.start
+
+func syncCurrent*(com: CommonRef): BlockNumber =
+  com.syncProgress.current
+
+func syncHighest*(com: CommonRef): BlockNumber =
+  com.syncProgress.highest
+
+func syncReqRelaxV2*(com: CommonRef): bool =
+  com.syncReqRelaxV2
+
+# ------------------------------------------------------------------------------
+# Setters
+# ------------------------------------------------------------------------------
+
+proc `syncStart=`*(com: CommonRef, number: BlockNumber) =
+  com.syncProgress.start = number
+
+proc `syncCurrent=`*(com: CommonRef, number: BlockNumber) =
+  com.syncProgress.current = number
+
+proc `syncHighest=`*(com: CommonRef, number: BlockNumber) =
+  com.syncProgress.highest = number
+
 proc `startOfHistory=`*(com: CommonRef, val: Hash256) =
+  ## Setter
   com.startOfHistory = val
 
+proc setTTD*(com: CommonRef, ttd: Option[DifficultyInt]) =
+  ## useful for testing
+  com.config.terminalTotalDifficulty = ttd
+  # rebuild the MergeFork piece of the forkTransitionTable
+  com.forkTransitionTable.mergeForkTransitionThreshold = com.config.mergeForkTransitionThreshold
+
 proc setFork*(com: CommonRef, fork: HardFork): Hardfork =
+  ## useful for testing
   result = com.currentFork
   com.currentFork = fork
+  com.consensusTransition(fork)
+
+proc `syncReqNewHead=`*(com: CommonRef; cb: SyncReqNewHeadCB) =
+  ## Activate or reset a call back handler for syncing. When resetting (by
+  ## passing `cb` as `nil`), the `syncReqRelaxV2` value is also reset.
+  com.syncReqNewHead = cb
+  if cb.isNil:
+    com.syncReqRelaxV2 = false
+
+proc `syncReqRelaxV2=`*(com: CommonRef; val: bool) =
+  ## Allow processing of certain RPC/V2 messages type while syncing (i.e.
+  ## `syncReqNewHead` is set.) although `shanghaiTime` is unavailable
+  ## or has not reached, yet.
+  ##
+  ## This setter is effective only while `syncReqNewHead` is activated.
+  if not com.syncReqNewHead.isNil:
+    com.syncReqRelaxV2 = val
+
+# ------------------------------------------------------------------------------
+# End
+# ------------------------------------------------------------------------------

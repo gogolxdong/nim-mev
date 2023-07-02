@@ -3,6 +3,7 @@ import chronos
 import eth/p2p/[rlpx,ecies,peer_pool, discovery]
 import ./protocols
 import std/random
+import ./common
 
 template toa(a, b, c: untyped): untyped =
   toOpenArray((a), (b), (b) + (c) - 1)
@@ -55,6 +56,17 @@ while true:
   if peer.connectionState != Connected:
     break
   poll()
+
+createDir(string conf.dataDir)
+nimbus.dbBackend = newChainDB(string conf.dataDir)
+let trieDB = trieDB nimbus.dbBackend
+let com = CommonRef.new(trieDB,
+  conf.pruneMode == PruneMode.Full,
+  conf.networkId,
+  conf.networkParams
+  )
+
+com.initializeEmptyDb()
 
 # node.peerPool.start()
 # while true:
