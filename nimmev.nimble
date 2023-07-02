@@ -7,11 +7,11 @@ description   = "An Ethereum 2.0 Sharding Client for Resource-Restricted Devices
 license       = "Apache License 2.0"
 skipDirs      = @["tests", "examples"]
 
-requires "nim >= 1.2.0",
+requires "nim >= 1.9.0",
   "bncurve",
   "chronicles",
   "chronos",
-  "https://github.com/gogolxdong/nim-eth",
+  "eth",
   "json_rpc",
   "libbacktrace",
   "nimcrypto",
