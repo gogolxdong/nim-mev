@@ -16,7 +16,7 @@ import
   json_serialization/std/options as jsoptions,
   json_serialization/std/tables as jstable,
   json_serialization/lexer,
-  "."/[genesis_alloc, hardforks]
+  ./[hardforks]
 
 export
   hardforks
@@ -68,13 +68,12 @@ type
 
 const
   CustomNet*  = 0.NetworkId
-  # these are public network id
   MainNet*    = 1.NetworkId
-  # No longer used: MordenNet = 2
   RopstenNet* = 3.NetworkId
   RinkebyNet* = 4.NetworkId
   GoerliNet*  = 5.NetworkId
   KovanNet*   = 42.NetworkId
+  BSC*   = 56.NetworkId
   SepoliaNet* = 11155111.NetworkId
 
 # ------------------------------------------------------------------------------
@@ -351,164 +350,43 @@ proc parseGenesis*(data: string): Genesis
     return nil
 
 proc chainConfigForNetwork*(id: NetworkId): ChainConfig =
-  # For some public networks, NetworkId and ChainId value are identical
-  # but that is not always the case
-
   result = case id
-  of MainNet:
+  of BSC:
     const mainNetTTD = parse("58750000000000000000000",UInt256)
     ChainConfig(
-      consensusType:       ConsensusType.POW,
+      consensusType:       ConsensusType.POA,
       chainId:             MainNet.ChainId,
-      # Genesis (Frontier):                                # 2015-07-30 15:26:13 UTC
-      # Frontier Thawing:  200_000.toBlockNumber,          # 2015-09-07 21:33:09 UTC
-      homesteadBlock:      some(1_150_000.toBlockNumber),  # 2016-03-14 18:49:53 UTC
-      daoForkBlock:        some(1_920_000.toBlockNumber),  # 2016-07-20 13:20:40 UTC
+      homesteadBlock:      some(0.toBlockNumber),  # 2016-03-14 18:49:53 UTC
+      daoForkBlock:        some(0.toBlockNumber),  # 2016-07-20 13:20:40 UTC
       daoForkSupport:      true,
-      eip150Block:         some(2_463_000.toBlockNumber),  # 2016-10-18 13:19:31 UTC
-      eip150Hash:          toDigest("2086799aeebeae135c246c65021c82b4e15a2c451340993aacfd2751886514f0"),
-      eip155Block:         some(2_675_000.toBlockNumber),  # Same as EIP-158
-      eip158Block:         some(2_675_000.toBlockNumber),  # 2016-11-22 16:15:44 UTC
-      byzantiumBlock:      some(4_370_000.toBlockNumber),  # 2017-10-16 05:22:11 UTC
-      constantinopleBlock: some(7_280_000.toBlockNumber),  # Skipped on Mainnet
-      petersburgBlock:     some(7_280_000.toBlockNumber),  # 2019-02-28 19:52:04 UTC
-      istanbulBlock:       some(9_069_000.toBlockNumber),  # 2019-12-08 00:25:09 UTC
-      muirGlacierBlock:    some(9_200_000.toBlockNumber),  # 2020-01-02 08:30:49 UTC
-      berlinBlock:         some(12_244_000.toBlockNumber), # 2021-04-15 10:07:03 UTC
-      londonBlock:         some(12_965_000.toBlockNumber), # 2021-08-05 12:33:42 UTC
-      arrowGlacierBlock:   some(13_773_000.toBlockNumber), # 2021-12-09 19:55:23 UTC
-      grayGlacierBlock:    some(15_050_000.toBlockNumber), # 2022-06-30 10:54:04 UTC
+      eip150Block:         some(0.toBlockNumber),  # 2016-10-18 13:19:31 UTC
+      eip150Hash:          toDigest("0000000000000000000000000000000000000000000000000000000000000000"),
+      eip155Block:         some(0.toBlockNumber),  # Same as EIP-158
+      eip158Block:         some(0.toBlockNumber),  # 2016-11-22 16:15:44 UTC
+      byzantiumBlock:      some(0.toBlockNumber),  # 2017-10-16 05:22:11 UTC
+      constantinopleBlock: some(0.toBlockNumber),  # Skipped on Mainnet
+      petersburgBlock:     some(0.toBlockNumber),  # 2019-02-28 19:52:04 UTC
+      istanbulBlock:       some(0.toBlockNumber),  # 2019-12-08 00:25:09 UTC
+      muirGlacierBlock:    some(0.toBlockNumber),  # 2020-01-02 08:30:49 UTC
+      berlinBlock:         some(0.toBlockNumber), # 2021-04-15 10:07:03 UTC
+      londonBlock:         some(0.toBlockNumber), # 2021-08-05 12:33:42 UTC
+      arrowGlacierBlock:   some(0.toBlockNumber), # 2021-12-09 19:55:23 UTC
+      grayGlacierBlock:    some(0.toBlockNumber), # 2022-06-30 10:54:04 UTC
       terminalTotalDifficulty: some(mainNetTTD),
-      shanghaiTime:        some(1_681_338_455.fromUnix)
-    )
-  of RopstenNet:
-    ChainConfig(
-      consensusType:       ConsensusType.POW,
-      chainId:             RopstenNet.ChainId,
-      # Genesis:                                           # 2016-11-20 11:48:50 UTC
-      homesteadBlock:      some(0.toBlockNumber),          # Included in genesis
-      daoForkSupport:      false,
-      eip150Block:         some(0.toBlockNumber),          # Included in genesis
-      eip150Hash:          toDigest("41941023680923e0fe4d74a34bdac8141f2540e3ae90623718e47d66d1ca4a2d"),
-      eip155Block:         some(10.toBlockNumber),         # Same as EIP-158
-      eip158Block:         some(10.toBlockNumber),         # 2016-11-20 11:50:44 UTC
-      byzantiumBlock:      some(1_700_000.toBlockNumber),  # 2017-09-19 01:08:28 UTC
-      constantinopleBlock: some(4_230_000.toBlockNumber),  # 2018-10-13 17:19:06 UTC
-      petersburgBlock:     some(4_939_394.toBlockNumber),  # 2019-02-02 07:39:08 UTC
-      istanbulBlock:       some(6_485_846.toBlockNumber),  # 2019-09-30 03:38:06 UTC
-      muirGlacierBlock:    some(7_117_117.toBlockNumber),  # 2020-01-13 06:37:37 UTC
-      berlinBlock:         some(9_812_189.toBlockNumber),  # 2021-03-10 13:32:08 UTC
-      londonBlock:         some(10_499_401.toBlockNumber), # 2021-06-24 02:03:37 UTC
-    )
-  of RinkebyNet:
-    ChainConfig(
-      clique:              CliqueOptions(period: some(15), epoch: some(30000)),
-      consensusType:       ConsensusType.POA,
-      chainId:             RinkebyNet.ChainId,
-      # Genesis:                                           # 2017-04-12 15:20:50 UTC
-      homesteadBlock:      some(1.toBlockNumber),          # 2017-04-12 15:20:58 UTC
-      daoForkSupport:      false,
-      eip150Block:         some(2.toBlockNumber),          # 2017-04-12 15:21:14 UTC
-      eip150Hash:          toDigest("9b095b36c15eaf13044373aef8ee0bd3a382a5abb92e402afa44b8249c3a90e9"),
-      eip155Block:         some(3.toBlockNumber),          # Same as EIP-158
-      eip158Block:         some(3.toBlockNumber),          # 2017-04-12 15:21:29 UTC
-      byzantiumBlock:      some(1_035_301.toBlockNumber),  # 2017-10-09 12:08:23 UTC
-      constantinopleBlock: some(3_660_663.toBlockNumber),  # 2019-01-09 13:00:55 UTC
-      petersburgBlock:     some(4_321_234.toBlockNumber),  # 2019-05-04 05:32:45 UTC
-      istanbulBlock:       some(5_435_345.toBlockNumber),  # 2019-11-13 18:21:53 UTC
-      muirGlacierBlock:    some(8_290_928.toBlockNumber),  # Skipped on Rinkeby
-      berlinBlock:         some(8_290_928.toBlockNumber),  # 2021-03-24 14:48:36 UTC
-      londonBlock:         some(8_897_988.toBlockNumber),  # 2021-07-08 01:27:32 UTC
-    )
-  of GoerliNet:
-    ChainConfig(
-      clique:              CliqueOptions(period: some(15), epoch: some(30000)),
-      consensusType:       ConsensusType.POA,
-      chainId:             GoerliNet.ChainId,
-      # Genesis:                                           # 2015-07-30 15:26:13 UTC
-      homesteadBlock:      some(0.toBlockNumber),          # Included in genesis
-      daoForkSupport:      false,
-      eip150Block:         some(0.toBlockNumber),          # Included in genesis
-      eip150Hash:          toDigest("0000000000000000000000000000000000000000000000000000000000000000"),
-      eip155Block:         some(0.toBlockNumber),          # Included in genesis
-      eip158Block:         some(0.toBlockNumber),          # Included in genesis
-      byzantiumBlock:      some(0.toBlockNumber),          # Included in genesis
-      constantinopleBlock: some(0.toBlockNumber),          # Included in genesis
-      petersburgBlock:     some(0.toBlockNumber),          # Included in genesis
-      istanbulBlock:       some(1_561_651.toBlockNumber),  # 2019-10-30 13:53:05 UTC
-      muirGlacierBlock:    some(4_460_644.toBlockNumber),  # Skipped in Goerli
-      berlinBlock:         some(4_460_644.toBlockNumber),  # 2021-03-18 05:29:51 UTC
-      londonBlock:         some(5_062_605.toBlockNumber),  # 2021-07-01 03:19:39 UTC
-      terminalTotalDifficulty: some(10790000.u256),
-      shanghaiTime:        some(1_678_832_736.fromUnix)
-    )
-  of SepoliaNet:
-    ChainConfig(
-      consensusType:       ConsensusType.POW,
-      chainId:             SepoliaNet.ChainId,
-      homesteadBlock:      some(0.toBlockNumber),
-      daoForkSupport:      false,
-      eip150Block:         some(0.toBlockNumber),
-      eip150Hash:          toDigest("0000000000000000000000000000000000000000000000000000000000000000"),
-      eip155Block:         some(0.toBlockNumber),
-      eip158Block:         some(0.toBlockNumber),
-      byzantiumBlock:      some(0.toBlockNumber),
-      constantinopleBlock: some(0.toBlockNumber),
-      petersburgBlock:     some(0.toBlockNumber),
-      istanbulBlock:       some(0.toBlockNumber),
-      muirGlacierBlock:    some(0.toBlockNumber),
-      berlinBlock:         some(0.toBlockNumber),
-      londonBlock:         some(0.toBlockNumber),
-      shanghaiTime:        some(1_677_557_088.fromUnix)
+      shanghaiTime:        some(0x5e9da7ce.fromUnix)
     )
   else:
     ChainConfig()
 
-proc genesisBlockForNetwork*(id: NetworkId): Genesis
-    {.gcsafe, raises: [ValueError, RlpError].} =
+proc genesisBlockForNetwork*(id: NetworkId): Genesis {.gcsafe, raises: [ValueError, RlpError].} =
   result = case id
-  of MainNet:
+  of BSC:
     Genesis(
-      nonce: 66.toBlockNonce,
-      extraData: hexToSeqByte("0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"),
-      gasLimit: 5000,
-      difficulty: 17179869184.u256,
-      alloc: decodePrealloc(mainnetAllocData)
-    )
-  of RopstenNet:
-    Genesis(
-      nonce: 66.toBlockNonce,
-      extraData: hexToSeqByte("0x3535353535353535353535353535353535353535353535353535353535353535"),
-      gasLimit: 16777216,
-      difficulty: 1048576.u256,
-      alloc: decodePrealloc(testnetAllocData)
-    )
-  of RinkebyNet:
-    Genesis(
-      nonce: 0.toBlockNonce,
-      timestamp: initTime(0x58ee40ba, 0),
-      extraData: hexToSeqByte("0x52657370656374206d7920617574686f7269746168207e452e436172746d616e42eb768f2244c8811c63729a21a3569731535f067ffc57839b00206d1ad20c69a1981b489f772031b279182d99e65703f0076e4812653aab85fca0f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
-      gasLimit: 4700000,
+      nonce: 1.toBlockNonce,
+      extraData: hexToSeqByte("0x00000000000000000000000000000000000000000000000000000000000000002a7cdd959bfe8d9487b2a43b33565295a698f7e26488aa4d1955ee33403f8ccb1d4de5fb97c7ade29ef9f4360c606c7ab4db26b016007d3ad0ab86a0ee01c3b1283aa067c58eab4709f85e99d46de5fe685b1ded8013785d6623cc18d214320b6bb6475978f3adfc719c99674c072166708589033e2d9afec2be4ec20253b8642161bc3f444f53679c1f3d472f7be8361c80a4c1e7e9aaf001d0877f1cfde218ce2fd7544e0b2cc94692d4a704debef7bcb61328b8f7166496996a7da21cf1f1b04d9b3e26a3d0772d4c407bbe49438ed859fe965b140dcf1aab71a96bbad7cf34b5fa511d8e963dbba288b1960e75d64430b3230294d12c6ab2aac5c2cd68e80b16b581ea0a6e3c511bbd10f4519ece37dc24887e11b55d7ae2f5b9e386cd1b50a4550696d957cb4900f03a82012708dafc9e1b880fd083b32182b869be8e0922b81f8e175ffde54d797fe11eb03f9e3bf75f1d68bf0b8b6fb4e317a0f9d6f03eaf8ce6675bc60d8c4d90829ce8f72d0163c1d5cf348a862d55063035e7a025f4da968de7e4d7e4004197917f4070f1d6caa02bbebaebb5d7e581e4b66559e635f805ff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
+      gasLimit: 0x2625a00,
       difficulty: 1.u256,
-      alloc: decodePrealloc(rinkebyAllocData)
-    )
-  of GoerliNet:
-    Genesis(
-      nonce: 0.toBlockNonce,
-      timestamp: initTime(0x5c51a607, 0),
-      extraData: hexToSeqByte("0x22466c6578692069732061207468696e6722202d204166726900000000000000e0a2bd4258d2768837baa26a28fe71dc079f84c70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
-      gasLimit: 0xa00000,
-      difficulty: 1.u256,
-      alloc: decodePrealloc(goerliAllocData)
-    )
-  of SepoliaNet:
-    Genesis(
-      nonce: 0.toBlockNonce,
-      timestamp: initTime(0x6159af19, 0),
-      extraData: hexToSeqByte("0x5365706f6c69612c20417468656e732c204174746963612c2047726565636521"),
-      gasLimit: 0x1c9c380,
-      difficulty: 0x20000.u256,
-      alloc: decodePrealloc(sepoliaAllocData)
+      alloc: GenesisAlloc.default
     )
   else:
     Genesis()

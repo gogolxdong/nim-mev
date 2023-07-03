@@ -1,5 +1,5 @@
 
-## Generated at line 65
+## Generated at line 68
 type
   eth66* = object
 template State*(PROTO: type eth66): type =
@@ -287,11 +287,11 @@ template status*(peer: Peer; ethVersionArg: uint; networkId: NetworkId;
                  totalDifficulty: DifficultyInt; bestHash: Hash256;
                  genesisHash: Hash256; forkId: ChainForkId;
                  timeout: Duration = milliseconds(10000'i64)): Future[statusObj] =
-  let peer_5435818074 = peer
+  let peer_5435818076 = peer
   let sendingFuture`gensym61 = statusRawSender(peer, ethVersionArg, networkId,
       totalDifficulty, bestHash, genesisHash, forkId)
-  handshakeImpl(peer_5435818074, sendingFuture`gensym61,
-                nextMsg(peer_5435818074, statusObj), timeout)
+  handshakeImpl(peer_5435818076, sendingFuture`gensym61,
+                nextMsg(peer_5435818076, statusObj), timeout)
 
 proc newBlockHashes*(peerOrResponder: Peer;
                      hashes: openArray[NewBlockHashesAnnounce]): Future[void] {.
@@ -562,7 +562,8 @@ proc transactionsUserHandler(peer: Peer; transactions: seq[Transaction]) {.
 
   when trEthTraceGossipOk:
     info trEthRecvReceived & "Transactions (0x02)", peer,
-         transactions = transactions.len
+         transactions = transactions.len,
+         transactionHash = transactions.mapIt(it.itemID())
   let ctx = peer.networkState()
   ctx.handleAnnouncedTxs(peer, transactions)
 

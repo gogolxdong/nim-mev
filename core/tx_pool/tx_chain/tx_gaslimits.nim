@@ -16,7 +16,6 @@ import
   std/[math],
   ../../../common/common,
   ../../../constants,
-  ../../pow/header,
   eth/[eip1559]
 
 {.push raises: [].}

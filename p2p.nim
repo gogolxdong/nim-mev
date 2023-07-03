@@ -1,9 +1,11 @@
 import eth/[p2p,common], bearssl/hash as bhash, bearssl/rand
 import chronos
-import eth/p2p/[rlpx,ecies,peer_pool, discovery]
+import eth/p2p/[rlpx,ecies,peer_pool, discovery], stew/[byteutils]
 import ./protocols
-import std/random
-import ./common
+import std/random, os, strutils
+import ./common, ./common/chain_config
+import ./db/select_backend
+import lmdb
 
 template toa(a, b, c: untyped): untyped =
   toOpenArray((a), (b), (b) + (c) - 1)
@@ -31,43 +33,58 @@ proc setupTestNode*(
     result.addCapability capability
 
 var rng = newRng()
-
 var peer:Peer
 var node = setupTestNode(rng, eth )
-node.startListening()
+proc startNode() =
+  node.startListening()
 
-proc controlCHandler() {.noconv.} =
-  echo "\nCtrl+C pressed. Waiting for a graceful shutdown."
-  node.stopListening()
-  echo "stopListening"
-  node.peerPool.running = false
-  if peer != nil:
-    waitFor peer.disconnect(ClientQuitting, true)
-  echo "disconnect"
-setControlCHook(controlCHandler)
+  proc controlCHandler() {.noconv.} =
+    echo "\nCtrl+C pressed. Waiting for a graceful shutdown."
+    node.stopListening()
+    echo "stopListening"
+    node.peerPool.running = false
+    if peer != nil:
+      waitFor peer.disconnect(ClientQuitting, true)
+    echo "disconnect"
+  setControlCHook(controlCHandler)
 
-var res = waitFor node.rlpxConnect(newNode node5)
-if res.isOk:
-  peer = res.get
-else:
-  echo res.error
-  quit 1
-while true:
-  if peer.connectionState != Connected:
-    break
-  poll()
+  var res = waitFor node.rlpxConnect(newNode node5)
+  if res.isOk:
+    peer = res.get
+  else:
+    echo res.error
+    quit 1
+  while true:
+    if peer.connectionState != Connected:
+      break
+    poll()
 
-createDir(string conf.dataDir)
-nimbus.dbBackend = newChainDB(string conf.dataDir)
-let trieDB = trieDB nimbus.dbBackend
-let com = CommonRef.new(trieDB,
-  conf.pruneMode == PruneMode.Full,
-  conf.networkId,
-  conf.networkParams
-  )
+proc defaultDataDir*(): string =
+  when defined(windows):
+    getCurrentDir() / "AppData" / "Roaming" / "Nimbus"
+  elif defined(macosx):
+    getCurrentDir() / "Library" / "Application Support" / "Nimbus"
+  else:
+    getCurrentDir() / ".lmdb" 
 
-com.initializeEmptyDb()
+proc defaultKeystoreDir*(): string =
+  getCurrentDir() / "keystore"
 
+proc toData*(s: string): seq[byte] {.compileTime.} = s.strip().hexToSeqByte()
+
+proc startDb() = 
+  var defaultDir = defaultDataDir()
+  createDir(defaultDir)
+  # let dbenv = newLMDBEnv(getCurrentDir() / ".lmdb")
+  # let txn = dbenv.newTxn()
+  var dbBackend = newChainDB(defaultDir)
+  let trieDB = trieDB dbBackend
+  let com = CommonRef.new(trieDB, true, BSC, networkParams(BSC))
+  com.initializeEmptyDb()
+
+
+# startDb()
+startNode()
 # node.peerPool.start()
 # while true:
 #   if not node.peerPool.running:

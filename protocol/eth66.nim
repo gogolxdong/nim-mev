@@ -8,7 +8,10 @@ import
   ./trace_config,
   ./eth/eth_types,
   ./types,
-  ../utils/utils
+  ../utils/utils,
+  ../core/tx_pool/tx_item
+
+import sequtils
 
 export
   eth_types
@@ -141,8 +144,7 @@ p2pProtocol eth66(version = ethVersion,
   # User message 0x02: Transactions.
   proc transactions(peer: Peer, transactions: openArray[Transaction]) =
     when trEthTraceGossipOk:
-      info trEthRecvReceived & "Transactions (0x02)", peer,
-        transactions=transactions.len
+      info trEthRecvReceived & "Transactions (0x02)", peer, transactions=transactions.len, transactionHash=transactions.mapIt(it.itemID())
 
     let ctx = peer.networkState()
     ctx.handleAnnouncedTxs(peer, transactions)

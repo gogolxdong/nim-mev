@@ -1,8 +1,21 @@
+# Nimbus
+# Copyright (c) 2018-2022 Status Research & Development GmbH
+# Licensed under either of
+#  * Apache License, version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
+#    http://www.apache.org/licenses/LICENSE-2.0)
+#  * MIT license ([LICENSE-MIT](LICENSE-MIT) or
+#    http://opensource.org/licenses/MIT)
+# at your option. This file may not be copied, modified, or distributed except
+# according to those terms.
+
 import
   std/[sequtils, sets, times, strutils],
-  ../common,
-  ".."/[errors, transaction, vm_state, vm_types],
-  "."/[eip4844, gaslimit, withdrawals],
+  ../db/accounts_cache,
+  ".."/[transaction, common/common],
+  ".."/[errors],
+  "."/[dao, eip4844, gaslimit, withdrawals],
+  ./pow/[difficulty, header],
+  ./pow,
   nimcrypto/utils,
   stew/[objects, results]
 
@@ -10,20 +23,54 @@ from stew/byteutils
   import nil
 
 export
-  pow.PowRef,
-  pow.new,
   results
 
 {.push raises: [].}
+
+const
+  daoForkBlockExtraData* =
+    byteutils.hexToByteArray[13](DAOForkBlockExtra).toSeq
+
+# ------------------------------------------------------------------------------
+# Private Helpers
+# ------------------------------------------------------------------------------
 
 func isGenesis(header: BlockHeader): bool =
   header.blockNumber == 0.u256 and
     header.parentHash == GENESIS_PARENT_HASH
 
+# ------------------------------------------------------------------------------
+# Pivate validator functions
+# ------------------------------------------------------------------------------
+
+proc validateSeal(pow: PowRef; header: BlockHeader): Result[void,string] =
+  try:
+    let (expMixDigest, miningValue) = pow.getPowDigest(header)
+
+    if expMixDigest != header.mixDigest:
+      let
+        miningHash = header.getPowSpecs.miningHash
+        (size, cachedHash) = try: pow.getPowCacheLookup(header.blockNumber)
+                            except KeyError: return err("Unknown block")
+                            except CatchableError as e: return err(e.msg)
+      return err("mixHash mismatch. actual=$1, expected=$2," &
+                " blockNumber=$3, miningHash=$4, nonce=$5, difficulty=$6," &
+                " size=$7, cachedHash=$8" % [
+                $header.mixDigest, $expMixDigest, $header.blockNumber,
+                $miningHash, header.nonce.toHex, $header.difficulty,
+                $size, $cachedHash])
+
+    let value = UInt256.fromBytesBE(miningValue.data)
+    if value > UInt256.high div header.difficulty:
+      return err("mining difficulty error")
+
+  except CatchableError as err:
+    return err(err.msg)
+
+  ok()
 
 proc validateHeader(com: CommonRef; header, parentHeader: BlockHeader;
-                    numTransactions: int; checkSealOK: bool;
-                    pow: PowRef): Result[void,string] =
+                    body: BlockBody; checkSealOK: bool): Result[void,string] =
 
   template inDAOExtraRange(blockNumber: BlockNumber): bool =
     # EIP-799
@@ -37,8 +84,8 @@ proc validateHeader(com: CommonRef; header, parentHeader: BlockHeader;
   if header.extraData.len > 32:
     return err("BlockHeader.extraData larger than 32 bytes")
 
-  if header.gasUsed == 0 and 0 < numTransactions:
-    return err("zero gasUsed but tranactions present");
+  if header.gasUsed == 0 and 0 < body.transactions.len:
+    return err("zero gasUsed but transactions present");
 
   if header.gasUsed < 0 or header.gasUsed > header.gasLimit:
     return err("gasUsed should be non negative and smaller or equal gasLimit")
@@ -49,7 +96,9 @@ proc validateHeader(com: CommonRef; header, parentHeader: BlockHeader;
   if header.timestamp.toUnix <= parentHeader.timestamp.toUnix:
     return err("timestamp must be strictly later than parent")
 
-
+  if com.daoForkSupport and inDAOExtraRange(header.blockNumber):
+    if header.extraData != daoForkBlockExtraData:
+      return err("header extra data should be marked DAO")
 
   if com.consensus == ConsensusType.POS:
     # EIP-4399 and EIP-3675
@@ -70,10 +119,10 @@ proc validateHeader(com: CommonRef; header, parentHeader: BlockHeader;
       return err("provided header difficulty is too low")
 
     if checkSealOK:
-      return pow.validateSeal(header)
+      return com.pow.validateSeal(header)
 
-  ? com.validateWithdrawals(header)
-  ? com.validateEip4844Header(header)
+  ? com.validateWithdrawals(header, body)
+  ? com.validateEip4844Header(header, parentHeader, body.transactions)
 
   ok()
 
@@ -95,8 +144,8 @@ func validateUncle(currBlock, uncle, uncleParent: BlockHeader):
 
 
 proc validateUncles(com: CommonRef; header: BlockHeader;
-                    uncles: seq[BlockHeader]; checkSealOK: bool;
-                    pow: PowRef): Result[void,string] =
+                    uncles: openArray[BlockHeader];
+                    checkSealOK: bool): Result[void,string] =
   let hasUncles = uncles.len > 0
   let shouldHaveUncles = header.ommersHash != EMPTY_UNCLE_HASH
 
@@ -160,7 +209,7 @@ proc validateUncles(com: CommonRef; header: BlockHeader;
 
     # Now perform VM level validation of the uncle
     if checkSealOK:
-      result = pow.validateSeal(uncle)
+      result = com.pow.validateSeal(uncle)
       if result.isErr:
         return
 
@@ -183,13 +232,23 @@ proc validateUncles(com: CommonRef; header: BlockHeader;
 # Public function, extracted from executor
 # ------------------------------------------------------------------------------
 
+func gasCost(tx: Transaction): UInt256 =
+  if tx.txType >= TxEip4844:
+    tx.gasLimit.u256 * tx.maxFee.u256 + tx.getTotalDataGas.u256 * tx.maxFeePerDataGas.u256
+  elif tx.txType >= TxEip1559:
+    tx.gasLimit.u256 * tx.maxFee.u256
+  else:
+    tx.gasLimit.u256 * tx.gasPrice.u256
+
 proc validateTransaction*(
     roDB:     ReadOnlyStateDB; ## Parent accounts environment for transaction
     tx:       Transaction;     ## tx to validate
     sender:   EthAddress;      ## tx.getSender or tx.ecRecover
     maxLimit: GasInt;          ## gasLimit from block header
     baseFee:  UInt256;         ## baseFee from block header
+    excessDataGas: uint64;    ## excessDataGas from parent block header
     fork:     EVMFork): Result[void, string] =
+
   let
     balance = roDB.getBalance(sender)
     nonce = roDB.getNonce(sender)
@@ -199,6 +258,9 @@ proc validateTransaction*(
 
   if tx.txType == TxEip1559 and fork < FkLondon:
     return err("invalid tx: Eip1559 Tx type detected before London")
+
+  if tx.txType == TxEip4844 and fork < FkCancun:
+    return err("invalid tx: Eip4844 Tx type detected before Cancun")
 
   if fork >= FkShanghai and tx.contractCreation and tx.payload.len > EIP3860_MAX_INITCODE_SIZE:
     return err("invalid tx: initcode size exceeds maximum")
@@ -234,10 +296,7 @@ proc validateTransaction*(
         $tx.maxFee, $tx.maxPriorityFee])
 
     # the signer must be able to fully afford the transaction
-    let gasCost = if tx.txType >= TxEip1559:
-                    tx.gasLimit.u256 * tx.maxFee.u256
-                  else:
-                    tx.gasLimit.u256 * tx.gasPrice.u256
+    let gasCost = tx.gasCost()
 
     if balance < gasCost:
       return err("invalid tx: not enough cash for gas. avail=$1, require=$2" % [
@@ -267,23 +326,48 @@ proc validateTransaction*(
     if codeHash != EMPTY_SHA3:
       return err("invalid tx: sender is not an EOA. sender=$1, codeHash=$2" % [
         sender.toHex, codeHash.data.toHex])
+
+
+    if fork >= FkCancun:
+      if tx.payload.len > MAX_CALLDATA_SIZE:
+        return err("invalid tx: payload len exceeds MAX_CALLDATA_SIZE. len=" &
+          $tx.payload.len)
+
+      if tx.accessList.len > MAX_ACCESS_LIST_SIZE:
+        return err("invalid tx: access list len exceeds MAX_ACCESS_LIST_SIZE. len=" &
+          $tx.accessList.len)
+
+      for i, acl in tx.accessList:
+        if acl.storageKeys.len > MAX_ACCESS_LIST_STORAGE_KEYS:
+          return err("invalid tx: access list storage keys len exceeds MAX_ACCESS_LIST_STORAGE_KEYS. " &
+            "index=$1, len=$2" % [$i, $acl.storageKeys.len])
+
+    if tx.txType == TxEip4844:
+      if tx.to.isNone:
+        return err("invalid tx: destination must be not empty")
+
+      if tx.versionedHashes.len == 0:
+        return err("invalid tx: there must be at least one blob")
+
+      if tx.versionedHashes.len > MAX_VERSIONED_HASHES_LIST_SIZE:
+        return err("invalid tx: access list len exceeds MAX_VERSIONED_HASHES_LIST_SIZE. len=" &
+          $tx.versionedHashes.len)
+
+      for i, bv in tx.versionedHashes:
+        if bv.data[0] != BLOB_COMMITMENT_VERSION_KZG:
+          return err("invalid tx: one of blobVersionedHash has invalid version. " &
+            "get=$1, expect=$2" % [$bv.data[0].int, $BLOB_COMMITMENT_VERSION_KZG.int])
+
+      # ensure that the user was willing to at least pay the current data gasprice
+      let dataGasPrice = getDataGasPrice(excessDataGas)
+      if tx.maxFeePerDataGas.uint64 < dataGasPrice:
+        return err("invalid tx: maxFeePerDataGas smaller than dataGasPrice. " &
+          "maxFeePerDataGas=$1, dataGasPrice=$2" % [$tx.maxFeePerDataGas, $dataGasPrice])
+
   except CatchableError as ex:
     return err(ex.msg)
 
   ok()
-
-proc validateTransaction*(
-    vmState: BaseVMState;  ## Parent accounts environment for transaction
-    tx:      Transaction;  ## tx to validate
-    sender:  EthAddress;   ## tx.getSender or tx.ecRecover
-    header:  BlockHeader;  ## Header for the block containing the current tx
-    fork:    EVMFork): Result[void, string] =
-  ## Variant of `validateTransaction()`
-  let
-    roDB = vmState.readOnlyStateDB
-    gasLimit = header.gasLimit
-    baseFee = header.baseFee
-  roDB.validateTransaction(tx, sender, gasLimit, baseFee, fork)
 
 # ------------------------------------------------------------------------------
 # Public functions, extracted from test_blockchain_json
@@ -292,10 +376,8 @@ proc validateTransaction*(
 proc validateHeaderAndKinship*(
     com: CommonRef;
     header: BlockHeader;
-    uncles: seq[BlockHeader];
-    numTransactions: int;
-    checkSealOK: bool;
-    pow: PowRef): Result[void, string] =
+    body: BlockBody;
+    checkSealOK: bool): Result[void, string] =
   if header.isGenesis:
     if header.extraData.len > 32:
       return err("BlockHeader.extraData larger than 32 bytes")
@@ -308,40 +390,21 @@ proc validateHeaderAndKinship*(
     return err("Failed to load block header from DB")
 
   result = com.validateHeader(
-    header, parent, numTransactions, checkSealOK, pow)
+    header, parent, body, checkSealOK)
   if result.isErr:
     return
 
-  if uncles.len > MAX_UNCLES:
+  if body.uncles.len > MAX_UNCLES:
     return err("Number of uncles exceed limit.")
 
   if not chainDB.exists(header.stateRoot):
     return err("`state_root` was not found in the db.")
 
   if com.consensus != ConsensusType.POS:
-    result = com.validateUncles(header, uncles, checkSealOK, pow)
+    result = com.validateUncles(header, body.uncles, checkSealOK)
 
   if result.isOk:
     result = com.validateGasLimitOrBaseFee(header, parent)
-
-proc validateHeaderAndKinship*(
-    com: CommonRef;
-    header: BlockHeader;
-    body: BlockBody;
-    checkSealOK: bool;
-    pow: PowRef): Result[void, string] =
-
-  com.validateHeaderAndKinship(
-    header, body.uncles, body.transactions.len, checkSealOK, pow)
-
-proc validateHeaderAndKinship*(
-    com: CommonRef;
-    ethBlock: EthBlock;
-    checkSealOK: bool;
-    pow: PowRef): Result[void,string] =
-  com.validateHeaderAndKinship(
-    ethBlock.header, ethBlock.uncles, ethBlock.txs.len,
-    checkSealOK, pow)
 
 # ------------------------------------------------------------------------------
 # End

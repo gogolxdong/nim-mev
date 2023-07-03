@@ -18,7 +18,7 @@ import
   std/[sets, tables],
   ../../../db/accounts_cache,
   ../../../common/common,
-  "../.."/[dao, executor, validate],
+  "../.."/[dao, executor, validate, eip4844],
   ../../../transaction/call_evm,
   ../../../transaction,
   ../../../vm_state,
@@ -43,6 +43,7 @@ type
     tr: HexaryTrie
     cleanState: bool
     balance: UInt256
+    dataGasUsed: uint64
 
 const
   receiptsExtensionSize = ##\
@@ -100,16 +101,12 @@ proc runTx(pst: TxPackerStateRef; item: TxItemRef): GasInt
 
 proc runTxCommit(pst: TxPackerStateRef; item: TxItemRef; gasBurned: GasInt)
     {.gcsafe,raises: [CatchableError].} =
-  ## Book keeping after executing argument `item` transaction in the VM. The
-  ## function returns the next number of items `nItems+1`.
   let
     xp = pst.xp
     vmState = xp.chain.vmState
     inx = xp.txDB.byStatus.eq(txItemPacked).nItems
     gasTip = item.tx.effectiveGasTip(xp.chain.baseFee)
 
-  # The gas tip cannot get negative as all items in the `staged` bucket
-  # are vetted for profitability before entering that bucket.
   assert 0 <= gasTip
   let reward = gasBurned.u256 * gasTip.uint64.u256
   vmState.stateDB.addBalance(xp.chain.feeRecipient, reward)
@@ -137,8 +134,12 @@ proc runTxCommit(pst: TxPackerStateRef; item: TxItemRef; gasBurned: GasInt)
   vmState.cumulativeGasUsed += gasBurned
   vmState.receipts[inx] = vmState.makeReceipt(item.tx.txType)
 
+  # EIP-4844, count dataGasUsed
+  if item.tx.txType >= TxEip4844:
+    pst.dataGasUsed += item.tx.getTotalDataGas
+
   # Update txRoot
-  pst.tr.put(rlp.encode(inx), rlp.encode(item.tx))
+  pst.tr.put(rlp.encode(inx), rlp.encode(item.tx.removeNetworkPayload))
 
   # Add the item to the `packed` bucket. This implicitely increases the
   # receipts index `inx` at the next visit of this function.
@@ -185,6 +186,9 @@ proc vmExecGrabItem(pst: TxPackerStateRef; item: TxItemRef): Result[bool,void]
   # Validate transaction relative to the current vmState
   if not xp.classifyValidatePacked(vmState, item):
     return ok(false) # continue with next account
+
+  # EIP-1153
+  vmState.stateDB.clearTransientStorage()
 
   let
     accTx = vmState.stateDB.beginSavepoint
@@ -240,6 +244,11 @@ proc vmExecCommit(pst: TxPackerStateRef)
   xp.chain.receipts = vmState.receipts
   xp.chain.txRoot = pst.tr.rootHash
   xp.chain.stateRoot = vmState.stateDB.rootHash
+
+  if vmState.com.forkGTE(Cancun):
+    # EIP-4844
+    let excessDataGas = calcExcessDataGas(vmState.parent)
+    xp.chain.excessDataGas = some(excessDataGas)
 
   proc balanceDelta: UInt256 =
     let postBalance = vmState.readOnlyStateDB.getBalance(xp.chain.feeRecipient)
