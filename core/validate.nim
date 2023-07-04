@@ -14,8 +14,6 @@ import
   ".."/[transaction, common/common],
   ".."/[errors],
   "."/[dao, eip4844, gaslimit, withdrawals],
-  ./pow/[difficulty, header],
-  ./pow,
   nimcrypto/utils,
   stew/[objects, results]
 
@@ -43,31 +41,31 @@ func isGenesis(header: BlockHeader): bool =
 # Pivate validator functions
 # ------------------------------------------------------------------------------
 
-proc validateSeal(pow: PowRef; header: BlockHeader): Result[void,string] =
-  try:
-    let (expMixDigest, miningValue) = pow.getPowDigest(header)
+# proc validateSeal(pow: PowRef; header: BlockHeader): Result[void,string] =
+#   try:
+#     let (expMixDigest, miningValue) = pow.getPowDigest(header)
 
-    if expMixDigest != header.mixDigest:
-      let
-        miningHash = header.getPowSpecs.miningHash
-        (size, cachedHash) = try: pow.getPowCacheLookup(header.blockNumber)
-                            except KeyError: return err("Unknown block")
-                            except CatchableError as e: return err(e.msg)
-      return err("mixHash mismatch. actual=$1, expected=$2," &
-                " blockNumber=$3, miningHash=$4, nonce=$5, difficulty=$6," &
-                " size=$7, cachedHash=$8" % [
-                $header.mixDigest, $expMixDigest, $header.blockNumber,
-                $miningHash, header.nonce.toHex, $header.difficulty,
-                $size, $cachedHash])
+#     if expMixDigest != header.mixDigest:
+#       let
+#         miningHash = header.getPowSpecs.miningHash
+#         (size, cachedHash) = try: pow.getPowCacheLookup(header.blockNumber)
+#                             except KeyError: return err("Unknown block")
+#                             except CatchableError as e: return err(e.msg)
+#       return err("mixHash mismatch. actual=$1, expected=$2," &
+#                 " blockNumber=$3, miningHash=$4, nonce=$5, difficulty=$6," &
+#                 " size=$7, cachedHash=$8" % [
+#                 $header.mixDigest, $expMixDigest, $header.blockNumber,
+#                 $miningHash, header.nonce.toHex, $header.difficulty,
+#                 $size, $cachedHash])
 
-    let value = UInt256.fromBytesBE(miningValue.data)
-    if value > UInt256.high div header.difficulty:
-      return err("mining difficulty error")
+#     let value = UInt256.fromBytesBE(miningValue.data)
+#     if value > UInt256.high div header.difficulty:
+#       return err("mining difficulty error")
 
-  except CatchableError as err:
-    return err(err.msg)
+#   except CatchableError as err:
+#     return err(err.msg)
 
-  ok()
+#   ok()
 
 proc validateHeader(com: CommonRef; header, parentHeader: BlockHeader;
                     body: BlockBody; checkSealOK: bool): Result[void,string] =
@@ -101,9 +99,6 @@ proc validateHeader(com: CommonRef; header, parentHeader: BlockHeader;
       return err("header extra data should be marked DAO")
 
   if com.consensus == ConsensusType.POS:
-    # EIP-4399 and EIP-3675
-    # no need to check mixDigest because EIP-4399 override this field
-    # checking rule
 
     if not header.difficulty.isZero:
       return err("Non-zero difficulty in a post-merge block")
@@ -113,13 +108,6 @@ proc validateHeader(com: CommonRef; header, parentHeader: BlockHeader;
 
     if header.ommersHash != EMPTY_UNCLE_HASH:
       return err("Invalid ommers hash in a post-merge block")
-  else:
-    let calcDiffc = com.calcDifficulty(header.timestamp, parentHeader)
-    if header.difficulty < calcDiffc:
-      return err("provided header difficulty is too low")
-
-    if checkSealOK:
-      return com.pow.validateSeal(header)
 
   ? com.validateWithdrawals(header, body)
   ? com.validateEip4844Header(header, parentHeader, body.transactions)
@@ -208,10 +196,10 @@ proc validateUncles(com: CommonRef; header: BlockHeader;
       return err("Uncle's parent must me older")
 
     # Now perform VM level validation of the uncle
-    if checkSealOK:
-      result = com.pow.validateSeal(uncle)
-      if result.isErr:
-        return
+    # if checkSealOK:
+    #   result = com.pow.validateSeal(uncle)
+    #   if result.isErr:
+    #     return
 
     let uncleParent = try:
       chainDB.getBlockHeader(uncle.parentHash)

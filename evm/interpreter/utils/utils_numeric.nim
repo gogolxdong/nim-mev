@@ -1,11 +1,6 @@
-# Nimbus
-# Copyright (c) 2018 Status Research & Development GmbH
-# Licensed under either of
-#  * Apache License, version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-#  * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
-# at your option. This file may not be copied, modified, or distributed except according to those terms.
 
 import
+  stint/io,
   stew/endians2,
   eth/common/eth_types,
   ../../../constants
@@ -72,10 +67,10 @@ proc rangeToPadded*[T: StUint](x: openArray[byte], first, last, size: int): T =
     return # 0
 
   var temp: array[N, byte]
-  temp[0..hi-lo] = x.toOpenArray(lo, hi)
+  temp[0..hi-lo] = x[lo .. hi]
   result = T.fromBytesBE(
     temp.toOpenArray(0, size-1),
-    allowPadding = true
+    # allowPadding = true
   )
 
 proc rangeToPadded*(x: openArray[byte], first, size: int): seq[byte] =
@@ -90,7 +85,7 @@ proc rangeToPadded*(x: openArray[byte], first, size: int): seq[byte] =
 
 # calculates the memory size required for a step
 func calcMemSize*(offset, length: int): int {.inline.} =
-  if length.isZero: return 0
+  if length == 0: return 0
   result = offset + length
 
 func safeInt*(x: UInt256): int {.inline.} =

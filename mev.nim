@@ -83,7 +83,7 @@ proc startDb() =
   com.initializeEmptyDb()
 
 
-# startDb()
+startDb()
 startNode()
 # node.peerPool.start()
 # while true:

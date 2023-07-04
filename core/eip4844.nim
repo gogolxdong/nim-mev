@@ -205,20 +205,20 @@ proc validateBlobTransactionWrapper*(tx: Transaction):
 
   ok()
 
-proc loadKzgTrustedSetup*(): Result[void, string] =
-  const
-    vendorDir = currentSourcePath.parentDir.replace('\\', '/') & "/../../vendor"
-    trustedSetupDir = vendorDir & "/nim-kzg4844/kzg4844/csources/src"
+# proc loadKzgTrustedSetup*(): Result[void, string] =
+#   const
+#     vendorDir = currentSourcePath.parentDir.replace('\\', '/') & "/../../.nimble/"
+#     trustedSetupDir = vendorDir & "/nim-kzg4844/kzg4844/csources/src"
 
-  const const_preset = "mainnet"
-  const trustedSetup =
-    when const_preset == "mainnet":
-      staticRead trustedSetupDir & "/trusted_setup.txt"
-    elif const_preset == "minimal":
-      staticRead trustedSetupDir & "/trusted_setup_4.txt"
-    else:
-      ""
-  if const_preset == "mainnet" or const_preset == "minimal":
-    Kzg.loadTrustedSetupFromString(trustedSetup)
-  else:
-    ok()
+#   const const_preset = "mainnet"
+#   const trustedSetup =
+#     when const_preset == "mainnet":
+#       staticRead trustedSetupDir & "/trusted_setup.txt"
+#     elif const_preset == "minimal":
+#       staticRead trustedSetupDir & "/trusted_setup_4.txt"
+#     else:
+#       ""
+#   if const_preset == "mainnet" or const_preset == "minimal":
+#     Kzg.loadTrustedSetupFromString(trustedSetup)
+#   else:
+#     ok()

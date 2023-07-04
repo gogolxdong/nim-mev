@@ -1,20 +1,11 @@
-# Nimbus
-# Copyright (c) 2018 Status Research & Development GmbH
-# Licensed under either of
-#  * Apache License, version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
-#    http://www.apache.org/licenses/LICENSE-2.0)
-#  * MIT license ([LICENSE-MIT](LICENSE-MIT) or
-#    http://opensource.org/licenses/MIT)
-# at your option. This file may not be copied, modified, or distributed except
-# according to those terms.
 
 import
+  ".."/[db/accounts_cache, constants],
   "."/[code_stream, memory, message, stack, state],
   "."/[transaction_tracer, types],
   ./interpreter/[gas_meter, gas_costs, op_codes],
   ../common/[common, evmforks],
   ../utils/utils,
-  ../constants,
   chronicles, chronos,
   eth/[keys],
   sets
@@ -46,15 +37,20 @@ when defined(evmc_enabled):
 const
   evmc_enabled* = defined(evmc_enabled)
 
+# ------------------------------------------------------------------------------
+# Helpers
+# ------------------------------------------------------------------------------
 
+proc generateContractAddress(c: Computation, salt: ContractSalt): EthAddress =
+  if c.msg.kind == evmcCreate:
+    let creationNonce = c.vmState.readOnlyStateDB().getNonce(c.msg.sender)
+    result = generateAddress(c.msg.sender, creationNonce)
+  else:
+    result = generateSafeAddress(c.msg.sender, salt, c.msg.data)
 
-# proc generateContractAddress(c: Computation, salt: ContractSalt): EthAddress =
-#   if c.msg.kind == evmcCreate:
-#     let creationNonce = c.vmState.readOnlyStateDB().getNonce(c.msg.sender)
-#     result = generateAddress(c.msg.sender, creationNonce)
-#   else:
-#     result = generateSafeAddress(c.msg.sender, salt, c.msg.data)
-
+# ------------------------------------------------------------------------------
+# Public functions
+# ------------------------------------------------------------------------------
 
 template getCoinbase*(c: Computation): EthAddress =
   when evmc_enabled:
@@ -110,64 +106,78 @@ template getGasPrice*(c: Computation): GasInt =
   else:
     c.vmState.txGasPrice
 
-# proc getBlockHash*(c: Computation, number: UInt256): Hash256
-#     {.gcsafe, raises: [CatchableError].} =
-#   when evmc_enabled:
-#     let
-#       blockNumber = c.host.getTxContext().block_number.u256
-#       ancestorDepth  = blockNumber - number - 1
-#     if ancestorDepth >= constants.MAX_PREV_HEADER_DEPTH:
-#       return
-#     if number >= blockNumber:
-#       return
-#     c.host.getBlockHash(number)
-#   else:
-#     let
-#       blockNumber = c.vmState.blockNumber
-#       ancestorDepth = blockNumber - number - 1
-#     if ancestorDepth >= constants.MAX_PREV_HEADER_DEPTH:
-#       return
-#     if number >= blockNumber:
-#       return
-#     c.vmState.getAncestorHash(number.vmWordToBlockNumber)
+template getVersionedHash*(c: Computation, index: int): VersionedHash =
+  when evmc_enabled:
+    # TODO: implement
+    Hash256()
+  else:
+    c.vmState.txVersionedHashes[index]
 
-# template accountExists*(c: Computation, address: EthAddress): bool =
-#   when evmc_enabled:
-#     c.host.accountExists(address)
-#   else:
-#     if c.fork >= FkSpurious:
-#       not c.vmState.readOnlyStateDB.isDeadAccount(address)
-#     else:
-#       c.vmState.readOnlyStateDB.accountExists(address)
+template getVersionedHashesLen*(c: Computation): int =
+  when evmc_enabled:
+    # TODO: implement
+    0
+  else:
+    c.vmState.txVersionedHashes.len
 
-# template getStorage*(c: Computation, slot: UInt256): UInt256 =
-#   when evmc_enabled:
-#     c.host.getStorage(c.msg.contractAddress, slot)
-#   else:
-#     c.vmState.readOnlyStateDB.getStorage(c.msg.contractAddress, slot)
+proc getBlockHash*(c: Computation, number: UInt256): Hash256
+                   {.gcsafe, raises: [CatchableError].} =
+  when evmc_enabled:
+    let
+      blockNumber = c.host.getTxContext().block_number.u256
+      ancestorDepth  = blockNumber - number - 1
+    if ancestorDepth >= constants.MAX_PREV_HEADER_DEPTH:
+      return
+    if number >= blockNumber:
+      return
+    c.host.getBlockHash(number)
+  else:
+    let
+      blockNumber = c.vmState.blockNumber
+      ancestorDepth = blockNumber - number - 1
+    if ancestorDepth >= constants.MAX_PREV_HEADER_DEPTH:
+      return
+    if number >= blockNumber:
+      return
+    c.vmState.getAncestorHash(number.vmWordToBlockNumber)
 
-# template getBalance*(c: Computation, address: EthAddress): UInt256 =
-#   when evmc_enabled:
-#     c.host.getBalance(address)
-#   else:
-#     c.vmState.readOnlyStateDB.getBalance(address)
+template accountExists*(c: Computation, address: EthAddress): bool =
+  when evmc_enabled:
+    c.host.accountExists(address)
+  else:
+    # if c.fork >= FkSpurious:
+    #   not c.vmState.readOnlyStateDB.isDeadAccount(address)
+    # else:
+      c.vmState.readOnlyStateDB.accountExists(address)
 
-# template getCodeSize*(c: Computation, address: EthAddress): uint =
-#   when evmc_enabled:
-#     c.host.getCodeSize(address)
-#   else:
-#     uint(c.vmState.readOnlyStateDB.getCodeSize(address))
+template getStorage*(c: Computation, slot: UInt256): UInt256 =
+  when evmc_enabled:
+    c.host.getStorage(c.msg.contractAddress, slot)
+  else:
+    c.vmState.readOnlyStateDB.getStorage(c.msg.contractAddress, slot)
 
-# template getCodeHash*(c: Computation, address: EthAddress): Hash256 =
-#   when evmc_enabled:
-#     c.host.getCodeHash(address)
-#   else:
-#     let
-#       db = c.vmState.readOnlyStateDB
-#     if not db.accountExists(address) or db.isEmptyAccount(address):
-#       default(Hash256)
-#     else:
-#       db.getCodeHash(address)
+template getBalance*(c: Computation, address: EthAddress): UInt256 =
+  when evmc_enabled:
+    c.host.getBalance(address)
+  else:
+    c.vmState.readOnlyStateDB.getBalance(address)
+
+template getCodeSize*(c: Computation, address: EthAddress): uint =
+  when evmc_enabled:
+    c.host.getCodeSize(address)
+  else:
+    uint(c.vmState.readOnlyStateDB.getCodeSize(address))
+
+template getCodeHash*(c: Computation, address: EthAddress): Hash256 =
+  when evmc_enabled:
+    c.host.getCodeHash(address)
+  else:
+    let
+      db = c.vmState.readOnlyStateDB
+    if not db.accountExists(address) or db.isEmptyAccount(address):
+      default(Hash256)
+    else:
+      db.getCodeHash(address)
 
 template selfDestruct*(c: Computation, address: EthAddress) =
   when evmc_enabled:
@@ -175,29 +185,45 @@ template selfDestruct*(c: Computation, address: EthAddress) =
   else:
     c.execSelfDestruct(address)
 
-# template getCode*(c: Computation, address: EthAddress): seq[byte] =
-#   when evmc_enabled:
-#     c.host.copyCode(address)
-#   else:
-#     c.vmState.readOnlyStateDB.getCode(address)
+template getCode*(c: Computation, address: EthAddress): seq[byte] =
+  when evmc_enabled:
+    c.host.copyCode(address)
+  else:
+    c.vmState.readOnlyStateDB.getCode(address)
 
-# proc newComputation*(vmState: BaseVMState, message: Message,
-#                      salt: ContractSalt = ZERO_CONTRACTSALT): Computation =
-#   new result
-#   result.vmState = vmState
-#   result.msg = message
-#   result.memory = Memory()
-#   result.stack = newStack()
-#   result.returnStack = @[]
-#   result.gasMeter.init(message.gas)
+template setTransientStorage*(c: Computation, slot, val: UInt256) =
+  when evmc_enabled:
+    # TODO: EIP-1153
+    discard
+  else:
+    c.vmState.stateDB.
+      setTransientStorage(c.msg.contractAddress, slot, val)
 
-#   if result.msg.isCreate():
-#     result.msg.contractAddress = result.generateContractAddress(salt)
-#     result.code = newCodeStream(message.data)
-#     message.data = @[]
-#   else:
-#     result.code = newCodeStream(
-#       vmState.readOnlyStateDB.getCode(message.codeAddress))
+template getTransientStorage*(c: Computation, slot: UInt256): UInt256 =
+  when evmc_enabled:
+    # TODO: EIP-1153
+    0.u256
+  else:
+    c.vmState.readOnlyStateDB.
+      getTransientStorage(c.msg.contractAddress, slot)
+
+proc newComputation*(vmState: BaseVMState, message: Message,
+                     salt: ContractSalt = ZERO_CONTRACTSALT): Computation =
+  new result
+  result.vmState = vmState
+  result.msg = message
+  result.memory = Memory()
+  result.stack = newStack()
+  result.returnStack = @[]
+  result.gasMeter.init(message.gas)
+
+  if result.msg.isCreate():
+    result.msg.contractAddress = result.generateContractAddress(salt)
+    result.code = newCodeStream(message.data)
+    message.data = @[]
+  else:
+    result.code = newCodeStream(
+      vmState.readOnlyStateDB.getCode(message.codeAddress))
 
 proc newComputation*(vmState: BaseVMState, message: Message, code: seq[byte]): Computation =
   new result
@@ -228,18 +254,18 @@ template isError*(c: Computation): bool =
 func shouldBurnGas*(c: Computation): bool =
   c.isError and c.error.burnsGas
 
-# proc snapshot*(c: Computation) =
-#   c.savePoint = c.vmState.stateDB.beginSavepoint()
+proc snapshot*(c: Computation) =
+  c.savePoint = c.vmState.stateDB.beginSavepoint()
 
-# proc commit*(c: Computation) =
-#   c.vmState.stateDB.commit(c.savePoint)
+proc commit*(c: Computation) =
+  c.vmState.stateDB.commit(c.savePoint)
 
-# proc dispose*(c: Computation) =
-#   c.vmState.stateDB.safeDispose(c.savePoint)
-#   c.savePoint = nil
+proc dispose*(c: Computation) =
+  c.vmState.stateDB.safeDispose(c.savePoint)
+  c.savePoint = nil
 
-# proc rollback*(c: Computation) =
-#   c.vmState.stateDB.rollback(c.savePoint)
+proc rollback*(c: Computation) =
+  c.vmState.stateDB.rollback(c.savePoint)
 
 proc setError*(c: Computation, msg: string, burnsGas = false) =
   c.error = Error(info: msg, burnsGas: burnsGas)
@@ -259,19 +285,19 @@ proc writeContract*(c: Computation)
     return
 
   # EIP-3541 constraint (https://eips.ethereum.org/EIPS/eip-3541).
-  if fork >= FkLondon and c.output[0] == 0xEF.byte:
-    withExtra trace, "New contract code starts with 0xEF byte, not allowed by EIP-3541"
-    # TODO: Return `EVMC_CONTRACT_VALIDATION_FAILURE` (like Silkworm).
-    c.setError("EVMC_CONTRACT_VALIDATION_FAILURE", true)
-    return
+  # if fork >= FkLondon and c.output[0] == 0xEF.byte:
+  #   withExtra trace, "New contract code starts with 0xEF byte, not allowed by EIP-3541"
+  #   # TODO: Return `EVMC_CONTRACT_VALIDATION_FAILURE` (like Silkworm).
+  #   c.setError("EVMC_CONTRACT_VALIDATION_FAILURE", true)
+  #   return
 
   # EIP-170 constraint (https://eips.ethereum.org/EIPS/eip-3541).
-  if fork >= FkSpurious and len > EIP170_MAX_CODE_SIZE:
-    withExtra trace, "New contract code exceeds EIP-170 limit",
-      codeSize=len, maxSize=EIP170_MAX_CODE_SIZE
-    # TODO: Return `EVMC_OUT_OF_GAS` (like Silkworm).
-    c.setError("EVMC_OUT_OF_GAS", true)
-    return
+  # if fork >= FkSpurious and len > EIP170_MAX_CODE_SIZE:
+  #   withExtra trace, "New contract code exceeds EIP-170 limit",
+  #     codeSize=len, maxSize=EIP170_MAX_CODE_SIZE
+  #   # TODO: Return `EVMC_OUT_OF_GAS` (like Silkworm).
+  #   c.setError("EVMC_OUT_OF_GAS", true)
+  #   return
 
   # Charge gas and write the code even if the code address is self-destructed.
   # Non-empty code in a newly created, self-destructed account is possible if
@@ -284,22 +310,22 @@ proc writeContract*(c: Computation)
   let codeCost = c.gasCosts[Create].c_handler(0.u256, gasParams).gasCost
   if codeCost <= c.gasMeter.gasRemaining:
     c.gasMeter.consumeGas(codeCost, reason = "Write new contract code")
-    # c.vmState.mutateStateDB:
-    #   db.setCode(c.msg.contractAddress, c.output)
+    c.vmState.mutateStateDB:
+      db.setCode(c.msg.contractAddress, c.output)
     withExtra trace, "Writing new contract code"
     return
 
-  if fork >= FkHomestead:
-    # EIP-2 (https://eips.ethereum.org/EIPS/eip-2).
-    # TODO: Return `EVMC_OUT_OF_GAS` (like Silkworm).
-    c.setError("EVMC_OUT_OF_GAS", true)
-  else:
+  # if fork >= FkHomestead:
+  #   # EIP-2 (https://eips.ethereum.org/EIPS/eip-2).
+  #   # TODO: Return `EVMC_OUT_OF_GAS` (like Silkworm).
+  #   c.setError("EVMC_OUT_OF_GAS", true)
+  # else:
     # Before EIP-2, when out of gas for code storage, the account ends up with
     # zero-length code and no error.  No gas is charged.  Code cited in EIP-2:
     # https://github.com/ethereum/pyethereum/blob/d117c8f3fd93/ethereum/processblock.py#L304
     # https://github.com/ethereum/go-ethereum/blob/401354976bb4/core/vm/instructions.go#L586
     # The account already has zero-length code to handle nested calls.
-    withExtra trace, "New contract given empty code by pre-Homestead rules"
+  withExtra trace, "New contract given empty code by pre-Homestead rules"
 
 template chainTo*(c: Computation, toChild: typeof(c.child), after: untyped) =
   c.child = toChild
@@ -317,38 +343,38 @@ template asyncChainTo*(c: Computation, asyncOperation: Future[void], after: unty
 proc merge*(c, child: Computation) =
   c.gasMeter.refundGas(child.gasMeter.gasRefunded)
 
-# proc execSelfDestruct*(c: Computation, beneficiary: EthAddress)
-#     {.gcsafe, raises: [CatchableError].} =
-#   c.vmState.mutateStateDB:
-#     let localBalance = c.getBalance(c.msg.contractAddress)
+proc execSelfDestruct*(c: Computation, beneficiary: EthAddress)
+    {.gcsafe, raises: [CatchableError].} =
+  c.vmState.mutateStateDB:
+    let localBalance = c.getBalance(c.msg.contractAddress)
 
-#     # Transfer to beneficiary
-#     db.addBalance(beneficiary, localBalance)
+    # Transfer to beneficiary
+    db.addBalance(beneficiary, localBalance)
 
-#     # Zero the balance of the address being deleted.
-#     # This must come after sending to beneficiary in case the
-#     # contract named itself as the beneficiary.
-#     db.setBalance(c.msg.contractAddress, 0.u256)
+    # Zero the balance of the address being deleted.
+    # This must come after sending to beneficiary in case the
+    # contract named itself as the beneficiary.
+    db.setBalance(c.msg.contractAddress, 0.u256)
 
-#     # Register the account to be deleted
-#     db.selfDestruct(c.msg.contractAddress)
+    # Register the account to be deleted
+    db.selfDestruct(c.msg.contractAddress)
 
-#     trace "SELFDESTRUCT",
-#       contractAddress = c.msg.contractAddress.toHex,
-#       localBalance = localBalance.toString,
-#       beneficiary = beneficiary.toHex
+    trace "SELFDESTRUCT",
+      contractAddress = c.msg.contractAddress.toHex,
+      localBalance = localBalance.toString,
+      beneficiary = beneficiary.toHex
 
-# proc addLogEntry*(c: Computation, log: Log) =
-#   c.vmState.stateDB.addLogEntry(log)
+proc addLogEntry*(c: Computation, log: Log) =
+  c.vmState.stateDB.addLogEntry(log)
 
 proc getGasRefund*(c: Computation): GasInt =
   if c.isSuccess:
     result = c.gasMeter.gasRefunded
 
-# proc refundSelfDestruct*(c: Computation) =
-#   let cost = gasFees[c.fork][RefundSelfDestruct]
-#   let num  = c.vmState.stateDB.selfDestructLen
-#   c.gasMeter.refundGas(cost * num)
+proc refundSelfDestruct*(c: Computation) =
+  let cost = gasFees[c.fork][RefundSelfDestruct]
+  let num  = c.vmState.stateDB.selfDestructLen
+  c.gasMeter.refundGas(cost * num)
 
 proc tracingEnabled*(c: Computation): bool =
   TracerFlags.EnableTracing in c.vmState.tracer.flags
@@ -357,9 +383,9 @@ proc traceOpCodeStarted*(c: Computation, op: Op): int
     {.gcsafe, raises: [CatchableError].} =
   c.vmState.tracer.traceOpCodeStarted(c, op)
 
-# proc traceOpCodeEnded*(c: Computation, op: Op, lastIndex: int)
-#     {.gcsafe, raises: [CatchableError].} =
-#   c.vmState.tracer.traceOpCodeEnded(c, op, lastIndex)
+proc traceOpCodeEnded*(c: Computation, op: Op, lastIndex: int)
+    {.gcsafe, raises: [CatchableError].} =
+  c.vmState.tracer.traceOpCodeEnded(c, op, lastIndex)
 
 proc traceError*(c: Computation)
     {.gcsafe, raises: [CatchableError].} =
@@ -368,3 +394,6 @@ proc traceError*(c: Computation)
 proc prepareTracer*(c: Computation) =
   c.vmState.tracer.prepare(c.msg.depth)
 
+# ------------------------------------------------------------------------------
+# End
+# ------------------------------------------------------------------------------

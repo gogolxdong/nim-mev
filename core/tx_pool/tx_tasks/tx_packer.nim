@@ -167,8 +167,7 @@ proc vmExecInit(xp: TxPoolRef): TxPackerStateRef
     tr: newMemoryDB().initHexaryTrie,
     balance: xp.chain.vmState.readOnlyStateDB.getBalance(xp.chain.feeRecipient))
 
-proc vmExecGrabItem(pst: TxPackerStateRef; item: TxItemRef): Result[bool,void]
-    {.gcsafe,raises: [CatchableError].}  =
+proc vmExecGrabItem(pst: TxPackerStateRef; item: TxItemRef): Result[bool,void] {.gcsafe,raises: [CatchableError].}  =
   ## Greedily collect & compact items as long as the accumulated `gasLimit`
   ## values are below the maximum block size.
   let

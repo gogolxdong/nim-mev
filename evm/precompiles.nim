@@ -1,36 +1,29 @@
-# Nimbus
-# Copyright (c) 2018 Status Research & Development GmbH
-# Licensed under either of
-#  * Apache License, version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
-#    http://www.apache.org/licenses/LICENSE-2.0)
-#  * MIT license ([LICENSE-MIT](LICENSE-MIT) or
-#    http://opensource.org/licenses/MIT)
-# at your option. This file may not be copied, modified, or distributed except
-# according to those terms.
-
 import
   std/[macros],
+  stew/results,
   "."/[types, blake2b_f, blscurve],
   ./interpreter/[gas_meter, gas_costs, utils/utils_numeric],
   ../errors, eth/[common, keys], chronicles,
   nimcrypto/[ripemd, sha2, utils], bncurve/[fields, groups],
   ../common/evmforks,
+  ../core/eip4844,
   ./modexp
+
 
 type
   PrecompileAddresses* = enum
-    # Frontier to Spurious Dragron
-    paEcRecover = 1
-    paSha256
-    paRipeMd160
-    paIdentity
+    # MirrorSyncBlock to Spurious Dragron
+    paEcRecover  = 0x01,
+    paSha256     = 0x02,
+    paRipeMd160  = 0x03,
+    paIdentity   = 0x04,
     # Byzantium and Constantinople
-    paModExp
-    paEcAdd
-    paEcMul
-    paPairing
+    paModExp     = 0x05,
+    paEcAdd      = 0x06,
+    paEcMul      = 0x07,
+    paPairing    = 0x08,
     # Istanbul
-    paBlake2bf
+    paBlake2bf   = 0x09,
     # Berlin
     # EIP-2537: disabled
     # reason: not included in berlin
@@ -43,12 +36,38 @@ type
     # paBlsPairing
     # paBlsMapG1
     # paBlsMapG2
+    # Cancun
+    paNoop0x0A, paNoop0x0B, paNoop0x0C,
+    paNoop0x0D, paNoop0x0E, paNoop0x0F,
+    paNoop0x10, paNoop0x11, paNoop0x12,
+    paNoop0x13,
 
-iterator activePrecompiles*(): EthAddress =
+    paPointEvaluation = 0x14
+
+proc getMaxPrecompileAddr(fork: EVMFork): PrecompileAddresses =
+  # if fork < FkByzantium: paIdentity
+  # elif fork < FkIstanbul: paPairing
+  # EIP 2537: disabled
+  # reason: not included in berlin
+  # elif fork < FkBerlin: paBlake2bf
+  # elif fork < FkCancun: paBlake2bf
+  PrecompileAddresses.high
+
+proc validPrecompileAddr(addrByte, maxPrecompileAddr: byte): bool =
+  (addrByte in PrecompileAddresses.low.byte .. maxPrecompileAddr) and
+    (addrByte notin paNoop0x0A.byte .. paNoop0x13.byte)
+
+proc validPrecompileAddr(addrByte: byte, fork: EVMFork): bool =
+  let maxPrecompileAddr = getMaxPrecompileAddr(fork)
+  validPrecompileAddr(addrByte, maxPrecompileAddr.byte)
+
+iterator activePrecompiles*(fork: EVMFork): EthAddress =
   var res: EthAddress
-  for c in PrecompileAddresses.low..PrecompileAddresses.high:
-    res[^1] = c.byte
-    yield res
+  let maxPrecompileAddr = getMaxPrecompileAddr(fork)
+  for c in PrecompileAddresses.low..maxPrecompileAddr:
+    if validPrecompileAddr(c.byte, maxPrecompileAddr.byte):
+      res[^1] = c.byte
+      yield res
 
 proc getSignature(computation: Computation): (array[32, byte], Signature) =
   # input is Hash, V, R, S
@@ -204,19 +223,19 @@ proc modExpFee(c: Computation, baseLen, expLen, modLen: UInt256, fork: EVMFork):
     ) div divisor
 
   # EIP2565: modExp gas cost
-  let gasFee = if fork >= FkBerlin: gasCalc(mulComplexityEIP2565, GasQuadDivisorEIP2565)
-               else: gasCalc(mulComplexity, GasQuadDivisor)
+  # let gasFee = if fork >= FkBerlin: gasCalc(mulComplexityEIP2565, GasQuadDivisorEIP2565)
+  #              else: gasCalc(mulComplexity, GasQuadDivisor)
 
-  if gasFee > high(GasInt).u256:
-    raise newException(OutOfGas, "modExp gas overflow")
+  # if gasFee > high(GasInt).u256:
+  #   raise newException(OutOfGas, "modExp gas overflow")
 
-  result = gasFee.truncate(GasInt)
+  # result = gasFee.truncate(GasInt)
 
   # EIP2565: modExp gas cost
-  if fork >= FkBerlin and result < 200.GasInt:
-    result = 200.GasInt
+  # if fork >= FkBerlin and result < 200.GasInt:
+  #   result = 200.GasInt
 
-proc modExp*(c: Computation, fork: EVMFork = FkByzantium) =
+proc modExp*(c: Computation, fork: EVMFork) =
   ## Modular exponentiation precompiled contract
   ## Yellow Paper Appendix E
   ## EIP-198 - https://github.com/ethereum/EIPs/blob/master/EIPS/eip-198.md
@@ -263,8 +282,8 @@ proc modExp*(c: Computation, fork: EVMFork = FkByzantium) =
     c.output = newSeq[byte](modLen)
     c.output[^output.len..^1] = output[0..^1]
 
-proc bn256ecAdd*(computation: Computation, fork: EVMFork = FkByzantium) =
-  let gasFee = if fork < FkIstanbul: GasECAdd else: GasECAddIstanbul
+proc bn256ecAdd*(computation: Computation, fork: EVMFork) =
+  let gasFee =  GasECAddIstanbul
   computation.gasMeter.consumeGas(gasFee, reason = "ecAdd Precompile")
 
   var
@@ -282,8 +301,8 @@ proc bn256ecAdd*(computation: Computation, fork: EVMFork = FkByzantium) =
 
   computation.output = @output
 
-proc bn256ecMul*(computation: Computation, fork: EVMFork = FkByzantium) =
-  let gasFee = if fork < FkIstanbul: GasECMul else: GasECMulIstanbul
+proc bn256ecMul*(computation: Computation, fork: EVMFork ) =
+  let gasFee =  GasECMulIstanbul
   computation.gasMeter.consumeGas(gasFee, reason="ecMul Precompile")
 
   var
@@ -302,16 +321,13 @@ proc bn256ecMul*(computation: Computation, fork: EVMFork = FkByzantium) =
 
   computation.output = @output
 
-proc bn256ecPairing*(computation: Computation, fork: EVMFork = FkByzantium) =
+proc bn256ecPairing*(computation: Computation, fork: EVMFork) =
   let msglen = len(computation.msg.data)
   if msglen mod 192 != 0:
     raise newException(ValidationError, "Invalid input length")
 
   let numPoints = msglen div 192
-  let gasFee = if fork < FkIstanbul:
-                 GasECPairingBase + numPoints * GasECPairingPerPoint
-               else:
-                 GasECPairingBaseIstanbul + numPoints * GasECPairingPerPointIstanbul
+  let gasFee = GasECPairingBaseIstanbul + numPoints * GasECPairingPerPointIstanbul
   computation.gasMeter.consumeGas(gasFee, reason="ecPairing Precompile")
 
   var output: array[32, byte]
@@ -643,21 +659,30 @@ proc blsMapG2*(c: Computation) =
   if not encodePoint(p, c.output):
     raise newException(ValidationError, "blsMapG2 encodePoint error")
 
-proc getMaxPrecompileAddr(fork: EVMFork): PrecompileAddresses =
-  if fork < FkByzantium: paIdentity
-  elif fork < FkIstanbul: paPairing
-  # EIP 2537: disabled
-  # reason: not included in berlin
-  # elif fork < FkBerlin: paBlake2bf
-  else: PrecompileAddresses.high
+proc pointEvaluation*(c: Computation) =
+  # Verify p(z) = y given commitment that corresponds to the polynomial p(x) and a KZG proof.
+  # Also verify that the provided commitment matches the provided versioned_hash.
+  # The data is encoded as follows: versioned_hash | z | y | commitment | proof |
+
+  template input: untyped =
+    c.msg.data
+
+  c.gasMeter.consumeGas(POINT_EVALUATION_PRECOMPILE_GAS,
+    reason = "EIP-4844 Point Evaluation Precompile")
+
+  let res = pointEvaluation(input)
+  if res.isErr:
+    raise newException(ValidationError, res.error)
+
+  # return a constant
+  c.output = @PointEvaluationResult
 
 proc execPrecompiles*(computation: Computation, fork: EVMFork): bool {.inline.} =
   for i in 0..18:
     if computation.msg.codeAddress[i] != 0: return
 
   let lb = computation.msg.codeAddress[19]
-  let maxPrecompileAddr = getMaxPrecompileAddr(fork)
-  if lb in PrecompileAddresses.low.byte .. maxPrecompileAddr.byte:
+  if validPrecompileAddr(lb, fork):
     result = true
     let precompile = PrecompileAddresses(lb)
     #trace "Call precompile", precompile = precompile, codeAddr = computation.msg.codeAddress
@@ -672,6 +697,8 @@ proc execPrecompiles*(computation: Computation, fork: EVMFork): bool {.inline.} 
       of paEcMul: bn256ecMul(computation, fork)
       of paPairing: bn256ecPairing(computation, fork)
       of paBlake2bf: blake2bf(computation)
+      of paPointEvaluation: pointEvaluation(computation)
+      else: discard
       # EIP 2537: disabled
       # reason: not included in berlin
       # of paBlsG1Add: blsG1Add(computation)
@@ -687,8 +714,8 @@ proc execPrecompiles*(computation: Computation, fork: EVMFork): bool {.inline.} 
       # cannot use setError here, cyclic dependency
       computation.error = Error(info: e.msg, burnsGas: true)
     except CatchableError as e:
-      if fork >= FkByzantium and precompile > paIdentity:
-        computation.error = Error(info: e.msg, burnsGas: true)
-      else:
+      # if fork >= FkByzantium and precompile > paIdentity:
+      computation.error = Error(info: e.msg, burnsGas: true)
+      # else:
         # swallow any other precompiles errors
-        debug "execPrecompiles validation error", msg=e.msg
+        # debug "execPrecompiles validation error", msg=e.msg

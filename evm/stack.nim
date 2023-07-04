@@ -1,10 +1,3 @@
-# Nimbus
-# Copyright (c) 2018 Status Research & Development GmbH
-# Licensed under either of
-#  * Apache License, version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-#  * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
-# at your option. This file may not be copied, modified, or distributed except according to those terms.
-
 import
   std/[strformat, strutils, sequtils, macros],
   chronicles, eth/common,
@@ -29,7 +22,7 @@ proc len*(stack: Stack): int {.inline.} =
 proc toStackElement(v: UInt256, elem: var StackElement) {.inline.} = elem = v
 proc toStackElement(v: uint | int | GasInt, elem: var StackElement) {.inline.} = elem = v.u256
 proc toStackElement(v: EthAddress, elem: var StackElement) {.inline.} = elem.initFromBytesBE(v)
-proc toStackElement(v: MDigest, elem: var StackElement) {.inline.} = elem.initFromBytesBE(v.data, allowPadding = false)
+proc toStackElement(v: MDigest, elem: var StackElement) {.inline.} = elem.initFromBytesBE(v.data)
 
 proc fromStackElement(elem: StackElement, v: var UInt256) {.inline.} = v = elem
 proc fromStackElement(elem: StackElement, v: var EthAddress) {.inline.} = v[0 .. ^1] = elem.toByteArrayBE().toOpenArray(12, 31)

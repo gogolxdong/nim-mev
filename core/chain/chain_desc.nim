@@ -73,10 +73,6 @@ proc clique*(c: ChainRef): Clique =
   ## Getter
   c.com.poa
 
-proc pow*(c: ChainRef): PowRef =
-  ## Getter
-  c.com.pow
-
 proc db*(c: ChainRef): ChainDBRef =
   ## Getter
   c.com.db

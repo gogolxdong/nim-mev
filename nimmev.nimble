@@ -20,6 +20,9 @@ requires "nim >= 1.9.0",
   "ethash",
   "blscurve",
   "evmc",
-  "https://github.com/gogolxdong/nim-web3"
+  "https://github.com/gogolxdong/nim-web3",
+  "blscurve",
+  "json_rpc",
+  "bncurve"
 
 binDir = "build"
