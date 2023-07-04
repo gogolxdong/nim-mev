@@ -3,8 +3,9 @@ import chronos
 import eth/p2p/[rlpx,ecies,peer_pool, discovery], stew/[byteutils]
 import ./protocols
 import std/random, os, strutils
-import ./common, ./common/chain_config
+import ./common, ./common/chain_config, ./core/chain/chain_desc
 import ./db/select_backend
+import ./sync/full, ./sync/handlers/setup, ./sync/peers
 import lmdb
 
 template toa(a, b, c: untyped): untyped =
@@ -17,6 +18,45 @@ var node2 = ENode.fromString("enode://28b1d16562dac280dacaaf45d54516b85bc6c99425
 var node3 = ENode.fromString("enode://5a7b996048d1b0a07683a949662c87c09b55247ce774aeee10bb886892e586e3c604564393292e38ef43c023ee9981e1f8b335766ec4f0f256e57f8640b079d5@35.73.137.11:30311").get
 var node4 = ENode.fromString("enode://22f27e4df6e569cce7bfca6c8c0d5a1f49a608a50dd34ee9eb79c8c9fcb8afda012595794db4a0a4d51ca9f26c33ad19c7602177ed438043571924641a3d3783@144.202.109.99:30311").get
 var node5 = ENode.fromString("enode://c641e6b3cb4754e3a0a2d85175f49df45febf9b164dea29e76a94e704dd542343fbd861b0c251cf7c72f38a436eb9f250832f80c22d3aaf3d755a6264f1c85d3@149.28.74.252:30311").get
+
+iterator strippedLines(filename: string): (int, string)
+    {.gcsafe, raises: [IOError].} =
+  var i = 0
+  for line in lines(filename):
+    let stripped = strip(line)
+    if stripped.startsWith('#'): 
+      continue
+
+    if stripped.len > 0:
+      yield (i, stripped)
+      inc i
+
+proc loadEnodeFile(fileName: string; output: var seq[ENode]; info: string) =
+  if fileName.len == 0:
+    return
+  try:
+    for i, ln in strippedLines(fileName):
+      if cmpIgnoreCase(ln, "override") == 0 and i == 0:
+        output = newSeq[ENode]()
+        continue
+
+      let res = ENode.fromString(ln)
+      if res.isErr:
+        warn "Ignoring invalid address", address=ln, line=i, file=fileName, purpose=info
+        continue
+
+      output.add res.get()
+
+  except IOError as e:
+    error "Could not read file", msg = e.msg, purpose = info
+    quit 1
+
+proc loadStaticPeersFile(fileName: string, output: var seq[ENode]) =
+  fileName.loadEnodeFile(output, "static peers")
+
+proc getStaticPeers*(conf: string): seq[ENode] =
+  # result.append(conf.staticPeers)
+  loadStaticPeersFile(string conf, result)
 
 var pk = PrivateKey.fromHex("0x21e4a26d7699c1db44cfd6303c8f969c3ab6c9e31bdc13d3ad5bfda7a180c9a5").get
 proc setupTestNode*(
@@ -48,16 +88,19 @@ proc startNode() =
     echo "disconnect"
   setControlCHook(controlCHandler)
 
-  var res = waitFor node.rlpxConnect(newNode node5)
-  if res.isOk:
-    peer = res.get
-  else:
-    echo res.error
-    quit 1
-  while true:
-    if peer.connectionState != Connected:
-      break
-    poll()
+  # var res = waitFor node.rlpxConnect(newNode node5)
+  # if res.isOk:
+  #   peer = res.get
+  # else:
+  #   echo res.error
+  #   quit 1
+  # while true:
+  #   if peer.connectionState != Connected:
+  #     break
+  #   poll()
+  var staticPeers = getStaticPeers("/root/staticPeers.txt")
+  var peerManager = PeerManagerRef.new(node.peerPool,15,0, staticPeers)
+  peerManager.start()
 
 proc defaultDataDir*(): string =
   when defined(windows):
@@ -72,19 +115,21 @@ proc defaultKeystoreDir*(): string =
 
 proc toData*(s: string): seq[byte] {.compileTime.} = s.strip().hexToSeqByte()
 
-proc startDb() = 
+proc startSync() = 
   var defaultDir = defaultDataDir()
   createDir(defaultDir)
-  # let dbenv = newLMDBEnv(getCurrentDir() / ".lmdb")
-  # let txn = dbenv.newTxn()
+
   var dbBackend = newChainDB(defaultDir)
   let trieDB = trieDB dbBackend
   let com = CommonRef.new(trieDB, true, BSC, networkParams(BSC))
   com.initializeEmptyDb()
+  let chain = newChain(com)
+  var sync = FullSyncRef.init(node,chain, rng, 30)
+  sync.start()
 
-
-startDb()
+startSync()
 startNode()
+
 # node.peerPool.start()
 # while true:
 #   if not node.peerPool.running:

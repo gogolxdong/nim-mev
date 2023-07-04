@@ -49,42 +49,36 @@ const
 proc notImplemented(name: string) =
   debug "Method not implemented", meth = name
 
-method getStatus*(ctx: EthWireBase): EthState
-    {.base, gcsafe, raises: [CatchableError].} =
+method getStatus*(ctx: EthWireBase): EthState {.base, gcsafe, raises: [CatchableError].} =
   notImplemented("getStatus")
 
-method getReceipts*(ctx: EthWireBase, hashes: openArray[Hash256]): seq[seq[Receipt]]
-    {.base, gcsafe, raises: [CatchableError].} =
+method getReceipts*(ctx: EthWireBase, hashes: openArray[Hash256]): seq[seq[Receipt]] {.base, gcsafe, raises: [CatchableError].} =
   notImplemented("getReceipts")
 
-method getPooledTxs*(ctx: EthWireBase, hashes: openArray[Hash256]): seq[Transaction] {.base.} =
+method getPooledTxs*(ctx: EthWireBase, hashes: openArray[Hash256]): seq[Transaction] {.base, gcsafe.} =
   notImplemented("getPooledTxs")
 
 method getBlockBodies*(ctx: EthWireBase, hashes: openArray[Hash256]): seq[BlockBody] {.base, gcsafe, raises: [CatchableError].} =
   notImplemented("getBlockBodies")
 
-method getBlockHeaders*(ctx: EthWireBase, req: BlocksRequest): seq[BlockHeader]
-    {.base, gcsafe, raises: [CatchableError].} =
+method getBlockHeaders*(ctx: EthWireBase, req: BlocksRequest): seq[BlockHeader] {.base, gcsafe, raises: [CatchableError].} =
   notImplemented("getBlockHeaders")
 
-method handleNewBlock*(ctx: EthWireBase, peer: Peer, blk: EthBlock, totalDifficulty: DifficultyInt)
-    {.base, gcsafe, raises: [CatchableError].} =
+method handleNewBlock*(ctx: EthWireBase, peer: Peer, blk: EthBlock, totalDifficulty: DifficultyInt) {.base, gcsafe, raises: [CatchableError].} =
   notImplemented("handleNewBlock")
 
-method handleAnnouncedTxs*(ctx: EthWireBase, peer: Peer, txs: openArray[Transaction])
-    {.base, gcsafe, raises: [CatchableError].} =
+method handleAnnouncedTxs*(ctx: EthWireBase, peer: Peer, txs: openArray[Transaction]) {.base, gcsafe, raises: [CatchableError].} =
   notImplemented("handleAnnouncedTxs")
 
-method handleAnnouncedTxsHashes*(ctx: EthWireBase, peer: Peer, txHashes: openArray[Hash256]) {.base.} =
-  notImplemented("handleAnnouncedTxsHashes")
+method handleAnnouncedTxsHashes*(ctx: EthWireBase, peer: Peer, txHashes: openArray[Hash256]) {.base, gcsafe.} =
+  {.gcsafe.}:
+    notImplemented("handleAnnouncedTxsHashes")
 
-method handleNewBlockHashes*(ctx: EthWireBase, peer: Peer, hashes: openArray[NewBlockHashesAnnounce])
-    {.base, gcsafe, raises: [CatchableError].} =
+method handleNewBlockHashes*(ctx: EthWireBase, peer: Peer, hashes: openArray[NewBlockHashesAnnounce]) {.base, gcsafe, raises: [CatchableError].} =
   notImplemented("handleNewBlockHashes")
 
-when defined(legacy_eth66_enabled):
-  method getStorageNodes*(ctx: EthWireBase, hashes: openArray[Hash256]): seq[Blob] {.base.} =
-    notImplemented("getStorageNodes")
+method getStorageNodes*(ctx: EthWireBase, hashes: openArray[Hash256]): seq[Blob] {.base, gcsafe.} =
+  notImplemented("getStorageNodes")
 
-  method handleNodeData*(ctx: EthWireBase, peer: Peer, data: openArray[Blob]) {.base.} =
-    notImplemented("handleNodeData")
+method handleNodeData*(ctx: EthWireBase, peer: Peer, data: openArray[Blob]) {.base, gcsafe.} =
+  notImplemented("handleNodeData")

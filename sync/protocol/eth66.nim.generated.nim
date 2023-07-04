@@ -281,16 +281,13 @@ proc statusRawSender(peerOrResponder: Peer; ethVersionArg: uint;
   appendImpl(writer, forkId)
   let msgBytes =
     const
-      loc`gensym219 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym219 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym219 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym219 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   return sendMsg(peer, msgBytes)
 
@@ -298,11 +295,11 @@ template status(peer: Peer; ethVersionArg: uint; networkId: NetworkId;
                 totalDifficulty: DifficultyInt; bestHash: Hash256;
                 genesisHash: Hash256; forkId: ChainForkId;
                 timeout: Duration = milliseconds(10000'i64)): Future[statusObj] =
-  let peer_8942256216 = peer
-  let sendingFuture`gensym61_8942256852 = statusRawSender(peer, ethVersionArg,
+  let peer_7079985209 = peer
+  let sendingFuture`gensym61_7079985906 = statusRawSender(peer, ethVersionArg,
       networkId, totalDifficulty, bestHash, genesisHash, forkId)
-  handshakeImpl(peer_8942256216, sendingFuture`gensym61_8942256852,
-                nextMsg(peer_8942256216, statusObj), timeout)
+  handshakeImpl(peer_7079985209, sendingFuture`gensym61_7079985906,
+                nextMsg(peer_7079985209, statusObj), timeout)
 
 proc newBlockHashes(peerOrResponder: Peer;
                     hashes: openArray[NewBlockHashesAnnounce]): Future[void] {.
@@ -316,16 +313,13 @@ proc newBlockHashes(peerOrResponder: Peer;
   appendImpl(writer, hashes)
   let msgBytes =
     const
-      loc`gensym236 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym236 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym236 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym236 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   return sendMsg(peer, msgBytes)
 
@@ -340,16 +334,13 @@ proc transactions(peerOrResponder: Peer; transactions: openArray[Transaction]): 
   append(writer, transactions)
   let msgBytes =
     const
-      loc`gensym243 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym243 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym242 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym242 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   return sendMsg(peer, msgBytes)
 
@@ -366,16 +357,13 @@ proc blockHeaders(peerOrResponder: ResponderWithId[blockHeadersObj];
   appendImpl(writer, headers)
   let msgBytes =
     const
-      loc`gensym252 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym252 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym251 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym251 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   return sendMsg(peer, msgBytes)
 
@@ -399,16 +387,13 @@ proc getBlockHeaders(peerOrResponder: Peer; request: BlocksRequest;
   appendImpl(writer, request)
   let msgBytes =
     const
-      loc`gensym285 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym285 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym285 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym285 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   linkSendFailureToReqFuture(sendMsg(peer, msgBytes), result)
 
@@ -425,16 +410,13 @@ proc blockBodies(peerOrResponder: ResponderWithId[blockBodiesObj];
   appendImpl(writer, blocks)
   let msgBytes =
     const
-      loc`gensym321 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym321 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym296 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym296 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   return sendMsg(peer, msgBytes)
 
@@ -458,16 +440,13 @@ proc getBlockBodies(peerOrResponder: Peer; hashes: openArray[Hash256];
   appendImpl(writer, hashes)
   let msgBytes =
     const
-      loc`gensym332 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym332 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym308 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym308 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   linkSendFailureToReqFuture(sendMsg(peer, msgBytes), result)
 
@@ -484,16 +463,13 @@ proc newBlock(peerOrResponder: Peer; blk: EthBlock;
   append(writer, totalDifficulty)
   let msgBytes =
     const
-      loc`gensym366 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym366 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym317 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym317 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   return sendMsg(peer, msgBytes)
 
@@ -509,16 +485,13 @@ proc newPooledTransactionHashes(peerOrResponder: Peer;
   appendImpl(writer, txHashes)
   let msgBytes =
     const
-      loc`gensym373 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym373 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym324 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym324 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   return sendMsg(peer, msgBytes)
 
@@ -536,16 +509,13 @@ proc pooledTransactions(peerOrResponder: ResponderWithId[pooledTransactionsObj];
   append(writer, transactions)
   let msgBytes =
     const
-      loc`gensym381 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym381 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym332 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym332 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   return sendMsg(peer, msgBytes)
 
@@ -569,16 +539,13 @@ proc getPooledTransactions(peerOrResponder: Peer; txHashes: openArray[Hash256];
   appendImpl(writer, txHashes)
   let msgBytes =
     const
-      loc`gensym392 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym392 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym344 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym344 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   linkSendFailureToReqFuture(sendMsg(peer, msgBytes), result)
 
@@ -593,16 +560,13 @@ proc getNodeData(peerOrResponder: Peer; nodeHashes: openArray[Hash256]): Future[
   appendImpl(writer, nodeHashes)
   let msgBytes =
     const
-      loc`gensym401 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym401 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym353 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym353 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   return sendMsg(peer, msgBytes)
 
@@ -617,16 +581,13 @@ proc nodeData(peerOrResponder: Peer; data: openArray[Blob]): Future[void] {.
   appendImpl(writer, data)
   let msgBytes =
     const
-      loc`gensym409 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym409 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym360 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym360 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   return sendMsg(peer, msgBytes)
 
@@ -643,16 +604,13 @@ proc receipts(peerOrResponder: ResponderWithId[receiptsObj];
   appendImpl(writer, receipts)
   let msgBytes =
     const
-      loc`gensym419 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym419 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym369 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym369 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   return sendMsg(peer, msgBytes)
 
@@ -676,16 +634,13 @@ proc getReceipts(peerOrResponder: Peer; hashes: openArray[Hash256];
   appendImpl(writer, hashes)
   let msgBytes =
     const
-      loc`gensym430 = (
-        filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-        line: 338, column: 11)
-      ploc`gensym430 = "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12)"
+      loc`gensym381 = (filename: "writer.nim", line: 338, column: 2)
+      ploc`gensym381 = "writer.nim(338, 3)"
     bind instantiationInfo
     mixin failedAssertImpl
-    {.line: (filename: "/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim",
-             line: 338, column: 11).}:
+    {.line: (filename: "writer.nim", line: 338, column: 2).}:
       if not (len(writer.pendingLists) == 0):
-        failedAssertImpl("/root/nimbus-eth1/vendor/nim-eth/eth/rlp/writer.nim(338, 12) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
+        failedAssertImpl("writer.nim(338, 3) `writer.pendingLists.len == 0` Insufficient number of elements written to a started list")
     writer.output
   linkSendFailureToReqFuture(sendMsg(peer, msgBytes), result)
 
@@ -693,7 +648,7 @@ proc statusUserHandler(peer: Peer; ethVersionArg: uint; networkId: NetworkId;
                        totalDifficulty: DifficultyInt; bestHash: Hash256;
                        genesisHash: Hash256; forkId: ChainForkId): Future[void] {.
     gcsafe, stackTrace: false, gcsafe, raises: [].} =
-  iterator statusUserHandler_8942259427(chronosInternalRetFuture: FutureBase;
+  iterator statusUserHandler_7079987406(chronosInternalRetFuture: FutureBase;
                                         :envP): FutureBase {.closure, gcsafe,
       raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -715,43 +670,34 @@ proc statusUserHandler(peer: Peer; ethVersionArg: uint; networkId: NetworkId;
       bind logIMPL, bindSym, brForceOpen
       try:
         block chroniclesLogStmt:
-          if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-            break chroniclesLogStmt
-          var record_8942259466:
+          var record_7079987445:
             defaultChroniclesStreamLogRecord
           mixin activateOutput
-          record_8942259466 = default(typeof(record_8942259466))
-          if {.gcsafe.}:
-            addr defaultChroniclesStreamOutputs
-          [][0].outFile ==
-              nil:
-            openOutput( {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0])
-          initLogRecord(record_8942259466, LogLevel(3), "eth66",
+          record_7079987445 = default(typeof(record_7079987445))
+          discard
+          initLogRecord(record_7079987445, LogLevel(INFO), "eth66",
                         "<< [eth/66] Received Status (0x00)")
-          setProperty(record_8942259466, "tid", getLogThreadId())
-          setProperty(record_8942259466, "file", "eth66.nim:142")
+          setProperty(record_7079987445, "tid", getLogThreadId())
           mixin setProperty, formatItIMPL
-          setProperty(record_8942259466, "peer", $peer.remote)
+          setProperty(record_7079987445, "peer", $peer.remote)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942259466, "networkId", networkId)
+          setProperty(record_7079987445, "networkId", networkId)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942259466, "totalDifficulty", totalDifficulty)
+          setProperty(record_7079987445, "totalDifficulty", totalDifficulty)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942259466, "bestHash", short(bestHash))
+          setProperty(record_7079987445, "bestHash", short(bestHash))
           mixin setProperty, formatItIMPL
-          setProperty(record_8942259466, "genesisHash", short(genesisHash))
+          setProperty(record_7079987445, "genesisHash", short(genesisHash))
           mixin setProperty, formatItIMPL
-          setProperty(record_8942259466, "forkHash", toHex(forkId.forkHash))
+          setProperty(record_7079987445, "forkHash", toHex(forkId.forkHash))
           mixin setProperty, formatItIMPL
-          setProperty(record_8942259466, "forkNext", forkId.forkNext)
+          setProperty(record_7079987445, "forkNext", forkId.forkNext)
           logAllDynamicProperties(
-            defaultChroniclesStream, record_8942259466)
-          flushRecord(record_8942259466)
-      except CatchableError as err`gensym444:
+            defaultChroniclesStream, record_7079987445)
+          flushRecord(record_7079987445)
+      except CatchableError as err`gensym393:
         logLoggingFailure(cstring("<< [eth/66] Received Status (0x00)"),
-                          err`gensym444)
+                          err`gensym393)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "eth66.nim", line: 142, column: 6).filename,
         (filename: "eth66.nim", line: 142, column: 6).line))
@@ -760,17 +706,17 @@ proc statusUserHandler(peer: Peer; ethVersionArg: uint; networkId: NetworkId;
     newFutureImpl(srcLocImpl("statusUserHandler", (filename: "eth66.nim",
         line: 142, column: 6).filename, (filename: "eth66.nim", line: 142,
         column: 6).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (statusUserHandler_8942259427, :env)
+    (statusUserHandler_7079987406, :env)
   futureContinue(resultFuture)
   return resultFuture
 
 proc newBlockHashesUserHandler(peer: Peer; hashes: seq[NewBlockHashesAnnounce]): Future[
     void] {.gcsafe, stackTrace: false, gcsafe, raises: [].} =
-  iterator newBlockHashesUserHandler_8942259682(
+  iterator newBlockHashesUserHandler_7079987604(
       chronosInternalRetFuture: FutureBase; :envP): FutureBase {.closure,
       gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -800,17 +746,17 @@ proc newBlockHashesUserHandler(peer: Peer; hashes: seq[NewBlockHashesAnnounce]):
     newFutureImpl(srcLocImpl("newBlockHashesUserHandler", (
         filename: "eth66.nim", line: 148, column: 4).filename, (
         filename: "eth66.nim", line: 148, column: 4).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (newBlockHashesUserHandler_8942259682, :env)
+    (newBlockHashesUserHandler_7079987604, :env)
   futureContinue(resultFuture)
   return resultFuture
 
 proc transactionsUserHandler(peer: Peer; transactions: seq[Transaction]): Future[
     void] {.gcsafe, stackTrace: false, gcsafe, raises: [].} =
-  iterator transactionsUserHandler_8942259745(
+  iterator transactionsUserHandler_7079987809(
       chronosInternalRetFuture: FutureBase; :envP): FutureBase {.closure,
       gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -840,17 +786,17 @@ proc transactionsUserHandler(peer: Peer; transactions: seq[Transaction]): Future
     newFutureImpl(srcLocImpl("transactionsUserHandler", (filename: "eth66.nim",
         line: 157, column: 4).filename, (filename: "eth66.nim", line: 157,
         column: 4).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (transactionsUserHandler_8942259745, :env)
+    (transactionsUserHandler_7079987809, :env)
   futureContinue(resultFuture)
   return resultFuture
 
 proc getBlockHeadersUserHandler(peer: Peer; reqId: int; request: BlocksRequest): Future[
     void] {.gcsafe, stackTrace: false, gcsafe, raises: [].} =
-  iterator getBlockHeadersUserHandler_8942259790(
+  iterator getBlockHeadersUserHandler_7079987854(
       chronosInternalRetFuture: FutureBase; :envP): FutureBase {.closure,
       gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -873,73 +819,33 @@ proc getBlockHeadersUserHandler(peer: Peer; reqId: int; request: BlocksRequest):
       bind logIMPL, bindSym, brForceOpen
       try:
         block chroniclesLogStmt:
-          if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-            break chroniclesLogStmt
-          var record_8942259843:
+          var record_7079987898:
             defaultChroniclesStreamLogRecord
           mixin activateOutput
-          record_8942259843 = default(typeof(record_8942259843))
-          if {.gcsafe.}:
-            addr defaultChroniclesStreamOutputs
-          [][0].outFile ==
-              nil:
-            openOutput( {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0])
-          initLogRecord(record_8942259843, LogLevel(3), "eth66",
+          record_7079987898 = default(typeof(record_7079987898))
+          discard
+          initLogRecord(record_7079987898, LogLevel(INFO), "eth66",
                         "<< [eth/66] Received GetBlockHeaders (0x03)")
-          setProperty(record_8942259843, "tid", getLogThreadId())
-          setProperty(record_8942259843, "file", "eth66.nim:168")
+          setProperty(record_7079987898, "tid", getLogThreadId())
           mixin setProperty, formatItIMPL
-          setProperty(record_8942259843, "peer", $peer.remote)
+          setProperty(record_7079987898, "peer", $peer.remote)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942259843, "count", request.maxResults)
+          setProperty(record_7079987898, "count", request.maxResults)
           logAllDynamicProperties(
-            defaultChroniclesStream, record_8942259843)
-          flushRecord(record_8942259843)
-      except CatchableError as err`gensym509:
+            defaultChroniclesStream, record_7079987898)
+          flushRecord(record_7079987898)
+      except CatchableError as err`gensym439:
         logLoggingFailure(cstring("<< [eth/66] Received GetBlockHeaders (0x03)"),
-                          err`gensym509)
+                          err`gensym439)
       if (
         uint64(192) < request.maxResults):
         bind logIMPL, bindSym, brForceOpen
-        try:
-          block chroniclesLogStmt:
-            if not topicsMatch(LogLevel(2), [topicStateIMPL("eth66")]):
-              break chroniclesLogStmt
-            var record_8942259937:
-              defaultChroniclesStreamLogRecord
-            mixin activateOutput
-            record_8942259937 = default(typeof(record_8942259937))
-            if {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0].outFile ==
-                nil:
-              openOutput( {.gcsafe.}:
-                addr defaultChroniclesStreamOutputs
-              [][0])
-            initLogRecord(record_8942259937, LogLevel(2), "eth66",
-                          "GetBlockHeaders (0x03) requested too many headers")
-            setProperty(record_8942259937, "tid", getLogThreadId())
-            setProperty(record_8942259937, "file", "eth66.nim:172")
-            mixin setProperty, formatItIMPL
-            setProperty(record_8942259937, "peer", $peer.remote)
-            mixin setProperty, formatItIMPL
-            setProperty(record_8942259937, "requested", request.maxResults)
-            mixin setProperty, formatItIMPL
-            setProperty(record_8942259937, "max", 192)
-            logAllDynamicProperties(
-              defaultChroniclesStream, record_8942259937)
-            flushRecord(record_8942259937)
-        except CatchableError as err`gensym530:
-          logLoggingFailure(cstring("GetBlockHeaders (0x03) requested too many headers"),
-                            err`gensym530)
-        chronosInternalRetFuture.internalChild = disconnect(peer,
-            BreachOfProtocol, false)
-        yield chronosInternalRetFuture.internalChild
-        if chronosInternalRetFuture.internalMustCancel:
+        chronosInternalRetFuture.child = disconnect(peer, BreachOfProtocol,
+            false)
+        yield chronosInternalRetFuture.child
+        if chronosInternalRetFuture.mustCancel:
           raise (ref CancelledError)(msg: "Future operation cancelled!")
-        internalCheckComplete(chronosInternalRetFuture.internalChild)
+        internalCheckComplete(chronosInternalRetFuture.child)
         complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
             (filename: "eth66.nim", line: 166, column: 4).filename,
             (filename: "eth66.nim", line: 166, column: 4).line))
@@ -952,73 +858,55 @@ proc getBlockHeadersUserHandler(peer: Peer; reqId: int; request: BlocksRequest):
         bind logIMPL, bindSym, brForceOpen
         try:
           block chroniclesLogStmt:
-            if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-              break chroniclesLogStmt
-            var record_8942260063:
+            var record_7079988017:
               defaultChroniclesStreamLogRecord
             mixin activateOutput
-            record_8942260063 = default(typeof(record_8942260063))
-            if {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0].outFile ==
-                nil:
-              openOutput( {.gcsafe.}:
-                addr defaultChroniclesStreamOutputs
-              [][0])
-            initLogRecord(record_8942260063, LogLevel(3), "eth66",
+            record_7079988017 = default(typeof(record_7079988017))
+            discard
+            initLogRecord(record_7079988017, LogLevel(INFO), "eth66",
                           ">> [eth/66] Replying with BlockHeaders (0x04)")
-            setProperty(record_8942260063, "tid", getLogThreadId())
-            setProperty(record_8942260063, "file", "eth66.nim:180")
+            setProperty(record_7079988017, "tid", getLogThreadId())
             mixin setProperty, formatItIMPL
-            setProperty(record_8942260063, "peer", $peer.remote)
+            setProperty(record_7079988017, "peer", $peer.remote)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942260063, "sent", len(headers))
+            setProperty(record_7079988017, "sent", len(headers))
             mixin setProperty, formatItIMPL
-            setProperty(record_8942260063, "requested", request.maxResults)
+            setProperty(record_7079988017, "requested", request.maxResults)
             logAllDynamicProperties(
-              defaultChroniclesStream, record_8942260063)
-            flushRecord(record_8942260063)
-        except CatchableError as err`gensym559:
+              defaultChroniclesStream, record_7079988017)
+            flushRecord(record_7079988017)
+        except CatchableError as err`gensym469:
           logLoggingFailure(cstring(">> [eth/66] Replying with BlockHeaders (0x04)"),
-                            err`gensym559)
+                            err`gensym469)
       else:
         bind logIMPL, bindSym, brForceOpen
         try:
           block chroniclesLogStmt:
-            if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-              break chroniclesLogStmt
-            var record_8942260170:
+            var record_7079988108:
               defaultChroniclesStreamLogRecord
             mixin activateOutput
-            record_8942260170 = default(typeof(record_8942260170))
-            if {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0].outFile ==
-                nil:
-              openOutput( {.gcsafe.}:
-                addr defaultChroniclesStreamOutputs
-              [][0])
-            initLogRecord(record_8942260170, LogLevel(3), "eth66",
+            record_7079988108 = default(typeof(record_7079988108))
+            discard
+            initLogRecord(record_7079988108, LogLevel(INFO), "eth66",
                           ">> [eth/66] Replying EMPTY BlockHeaders (0x04)")
-            setProperty(record_8942260170, "tid", getLogThreadId())
-            setProperty(record_8942260170, "file", "eth66.nim:183")
+            setProperty(record_7079988108, "tid", getLogThreadId())
             mixin setProperty, formatItIMPL
-            setProperty(record_8942260170, "peer", $peer.remote)
+            setProperty(record_7079988108, "peer", $peer.remote)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942260170, "sent", 0)
+            setProperty(record_7079988108, "sent", 0)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942260170, "requested", request.maxResults)
+            setProperty(record_7079988108, "requested", request.maxResults)
             logAllDynamicProperties(
-              defaultChroniclesStream, record_8942260170)
-            flushRecord(record_8942260170)
-        except CatchableError as err`gensym581:
+              defaultChroniclesStream, record_7079988108)
+            flushRecord(record_7079988108)
+        except CatchableError as err`gensym487:
           logLoggingFailure(cstring(">> [eth/66] Replying EMPTY BlockHeaders (0x04)"),
-                            err`gensym581)
-      chronosInternalRetFuture.internalChild = blockHeaders(response, headers)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+                            err`gensym487)
+      chronosInternalRetFuture.child = blockHeaders(response, headers)
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "eth66.nim", line: 167, column: 6).filename,
         (filename: "eth66.nim", line: 167, column: 6).line))
@@ -1027,17 +915,17 @@ proc getBlockHeadersUserHandler(peer: Peer; reqId: int; request: BlocksRequest):
     newFutureImpl(srcLocImpl("getBlockHeadersUserHandler", (
         filename: "eth66.nim", line: 167, column: 6).filename, (
         filename: "eth66.nim", line: 167, column: 6).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (getBlockHeadersUserHandler_8942259790, :env)
+    (getBlockHeadersUserHandler_7079987854, :env)
   futureContinue(resultFuture)
   return resultFuture
 
 proc getBlockBodiesUserHandler(peer: Peer; reqId: int; hashes: seq[Hash256]): Future[
     void] {.gcsafe, stackTrace: false, gcsafe, raises: [].} =
-  iterator getBlockBodiesUserHandler_8942260285(
+  iterator getBlockBodiesUserHandler_7079988207(
       chronosInternalRetFuture: FutureBase; :envP): FutureBase {.closure,
       gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -1060,73 +948,33 @@ proc getBlockBodiesUserHandler(peer: Peer; reqId: int; hashes: seq[Hash256]): Fu
       bind logIMPL, bindSym, brForceOpen
       try:
         block chroniclesLogStmt:
-          if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-            break chroniclesLogStmt
-          var record_8942260329:
+          var record_7079988251:
             defaultChroniclesStreamLogRecord
           mixin activateOutput
-          record_8942260329 = default(typeof(record_8942260329))
-          if {.gcsafe.}:
-            addr defaultChroniclesStreamOutputs
-          [][0].outFile ==
-              nil:
-            openOutput( {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0])
-          initLogRecord(record_8942260329, LogLevel(3), "eth66",
+          record_7079988251 = default(typeof(record_7079988251))
+          discard
+          initLogRecord(record_7079988251, LogLevel(INFO), "eth66",
                         "<< [eth/66] Received GetBlockBodies (0x05)")
-          setProperty(record_8942260329, "tid", getLogThreadId())
-          setProperty(record_8942260329, "file", "eth66.nim:194")
+          setProperty(record_7079988251, "tid", getLogThreadId())
           mixin setProperty, formatItIMPL
-          setProperty(record_8942260329, "peer", $peer.remote)
+          setProperty(record_7079988251, "peer", $peer.remote)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942260329, "hashes", len(hashes))
+          setProperty(record_7079988251, "hashes", len(hashes))
           logAllDynamicProperties(
-            defaultChroniclesStream, record_8942260329)
-          flushRecord(record_8942260329)
-      except CatchableError as err`gensym614:
+            defaultChroniclesStream, record_7079988251)
+          flushRecord(record_7079988251)
+      except CatchableError as err`gensym515:
         logLoggingFailure(cstring("<< [eth/66] Received GetBlockBodies (0x05)"),
-                          err`gensym614)
+                          err`gensym515)
       if (
         128 < len(hashes)):
         bind logIMPL, bindSym, brForceOpen
-        try:
-          block chroniclesLogStmt:
-            if not topicsMatch(LogLevel(2), [topicStateIMPL("eth66")]):
-              break chroniclesLogStmt
-            var record_8942260432:
-              defaultChroniclesStreamLogRecord
-            mixin activateOutput
-            record_8942260432 = default(typeof(record_8942260432))
-            if {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0].outFile ==
-                nil:
-              openOutput( {.gcsafe.}:
-                addr defaultChroniclesStreamOutputs
-              [][0])
-            initLogRecord(record_8942260432, LogLevel(2), "eth66",
-                          "GetBlockBodies (0x05) requested too many bodies")
-            setProperty(record_8942260432, "tid", getLogThreadId())
-            setProperty(record_8942260432, "file", "eth66.nim:197")
-            mixin setProperty, formatItIMPL
-            setProperty(record_8942260432, "peer", $peer.remote)
-            mixin setProperty, formatItIMPL
-            setProperty(record_8942260432, "requested", len(hashes))
-            mixin setProperty, formatItIMPL
-            setProperty(record_8942260432, "max", 128)
-            logAllDynamicProperties(
-              defaultChroniclesStream, record_8942260432)
-            flushRecord(record_8942260432)
-        except CatchableError as err`gensym635:
-          logLoggingFailure(cstring("GetBlockBodies (0x05) requested too many bodies"),
-                            err`gensym635)
-        chronosInternalRetFuture.internalChild = disconnect(peer,
-            BreachOfProtocol, false)
-        yield chronosInternalRetFuture.internalChild
-        if chronosInternalRetFuture.internalMustCancel:
+        chronosInternalRetFuture.child = disconnect(peer, BreachOfProtocol,
+            false)
+        yield chronosInternalRetFuture.child
+        if chronosInternalRetFuture.mustCancel:
           raise (ref CancelledError)(msg: "Future operation cancelled!")
-        internalCheckComplete(chronosInternalRetFuture.internalChild)
+        internalCheckComplete(chronosInternalRetFuture.child)
         complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
             (filename: "eth66.nim", line: 193, column: 4).filename,
             (filename: "eth66.nim", line: 193, column: 4).line))
@@ -1139,73 +987,55 @@ proc getBlockBodiesUserHandler(peer: Peer; reqId: int; hashes: seq[Hash256]): Fu
         bind logIMPL, bindSym, brForceOpen
         try:
           block chroniclesLogStmt:
-            if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-              break chroniclesLogStmt
-            var record_8942260562:
+            var record_7079988379:
               defaultChroniclesStreamLogRecord
             mixin activateOutput
-            record_8942260562 = default(typeof(record_8942260562))
-            if {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0].outFile ==
-                nil:
-              openOutput( {.gcsafe.}:
-                addr defaultChroniclesStreamOutputs
-              [][0])
-            initLogRecord(record_8942260562, LogLevel(3), "eth66",
+            record_7079988379 = default(typeof(record_7079988379))
+            discard
+            initLogRecord(record_7079988379, LogLevel(INFO), "eth66",
                           ">> [eth/66] Replying with BlockBodies (0x06)")
-            setProperty(record_8942260562, "tid", getLogThreadId())
-            setProperty(record_8942260562, "file", "eth66.nim:205")
+            setProperty(record_7079988379, "tid", getLogThreadId())
             mixin setProperty, formatItIMPL
-            setProperty(record_8942260562, "peer", $peer.remote)
+            setProperty(record_7079988379, "peer", $peer.remote)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942260562, "sent", len(bodies))
+            setProperty(record_7079988379, "sent", len(bodies))
             mixin setProperty, formatItIMPL
-            setProperty(record_8942260562, "requested", len(hashes))
+            setProperty(record_7079988379, "requested", len(hashes))
             logAllDynamicProperties(
-              defaultChroniclesStream, record_8942260562)
-            flushRecord(record_8942260562)
-        except CatchableError as err`gensym664:
+              defaultChroniclesStream, record_7079988379)
+            flushRecord(record_7079988379)
+        except CatchableError as err`gensym545:
           logLoggingFailure(cstring(">> [eth/66] Replying with BlockBodies (0x06)"),
-                            err`gensym664)
+                            err`gensym545)
       else:
         bind logIMPL, bindSym, brForceOpen
         try:
           block chroniclesLogStmt:
-            if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-              break chroniclesLogStmt
-            var record_8942260672:
+            var record_7079988473:
               defaultChroniclesStreamLogRecord
             mixin activateOutput
-            record_8942260672 = default(typeof(record_8942260672))
-            if {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0].outFile ==
-                nil:
-              openOutput( {.gcsafe.}:
-                addr defaultChroniclesStreamOutputs
-              [][0])
-            initLogRecord(record_8942260672, LogLevel(3), "eth66",
+            record_7079988473 = default(typeof(record_7079988473))
+            discard
+            initLogRecord(record_7079988473, LogLevel(INFO), "eth66",
                           ">> [eth/66] Replying EMPTY BlockBodies (0x06)")
-            setProperty(record_8942260672, "tid", getLogThreadId())
-            setProperty(record_8942260672, "file", "eth66.nim:208")
+            setProperty(record_7079988473, "tid", getLogThreadId())
             mixin setProperty, formatItIMPL
-            setProperty(record_8942260672, "peer", $peer.remote)
+            setProperty(record_7079988473, "peer", $peer.remote)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942260672, "sent", 0)
+            setProperty(record_7079988473, "sent", 0)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942260672, "requested", len(hashes))
+            setProperty(record_7079988473, "requested", len(hashes))
             logAllDynamicProperties(
-              defaultChroniclesStream, record_8942260672)
-            flushRecord(record_8942260672)
-        except CatchableError as err`gensym686:
+              defaultChroniclesStream, record_7079988473)
+            flushRecord(record_7079988473)
+        except CatchableError as err`gensym563:
           logLoggingFailure(cstring(">> [eth/66] Replying EMPTY BlockBodies (0x06)"),
-                            err`gensym686)
-      chronosInternalRetFuture.internalChild = blockBodies(response, bodies)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+                            err`gensym563)
+      chronosInternalRetFuture.child = blockBodies(response, bodies)
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "eth66.nim", line: 194, column: 6).filename,
         (filename: "eth66.nim", line: 194, column: 6).line))
@@ -1214,18 +1044,18 @@ proc getBlockBodiesUserHandler(peer: Peer; reqId: int; hashes: seq[Hash256]): Fu
     newFutureImpl(srcLocImpl("getBlockBodiesUserHandler", (
         filename: "eth66.nim", line: 194, column: 6).filename, (
         filename: "eth66.nim", line: 194, column: 6).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (getBlockBodiesUserHandler_8942260285, :env)
+    (getBlockBodiesUserHandler_7079988207, :env)
   futureContinue(resultFuture)
   return resultFuture
 
 proc newBlockUserHandler(peer: Peer; blk: EthBlock;
                          totalDifficulty: DifficultyInt): Future[void] {.gcsafe,
     stackTrace: false, gcsafe, raises: [].} =
-  iterator newBlockUserHandler_8942260799(chronosInternalRetFuture: FutureBase;
+  iterator newBlockUserHandler_7079988575(chronosInternalRetFuture: FutureBase;
       :envP): FutureBase {.closure, gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
       {.fatal: "You should not reference the `result` variable inside" &
@@ -1254,17 +1084,17 @@ proc newBlockUserHandler(peer: Peer; blk: EthBlock;
     newFutureImpl(srcLocImpl("newBlockUserHandler", (filename: "eth66.nim",
         line: 220, column: 4).filename, (filename: "eth66.nim", line: 220,
         column: 4).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (newBlockUserHandler_8942260799, :env)
+    (newBlockUserHandler_7079988575, :env)
   futureContinue(resultFuture)
   return resultFuture
 
 proc newPooledTransactionHashesUserHandler(peer: Peer; txHashes: seq[Hash256]): Future[
     void] {.gcsafe, stackTrace: false, gcsafe, raises: [].} =
-  iterator newPooledTransactionHashesUserHandler_8942260845(
+  iterator newPooledTransactionHashesUserHandler_7079988621(
       chronosInternalRetFuture: FutureBase; :envP): FutureBase {.closure,
       gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -1294,18 +1124,18 @@ proc newPooledTransactionHashesUserHandler(peer: Peer; txHashes: seq[Hash256]): 
     newFutureImpl(srcLocImpl("newPooledTransactionHashesUserHandler", (
         filename: "eth66.nim", line: 231, column: 4).filename, (
         filename: "eth66.nim", line: 231, column: 4).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (newPooledTransactionHashesUserHandler_8942260845, :env)
+    (newPooledTransactionHashesUserHandler_7079988621, :env)
   futureContinue(resultFuture)
   return resultFuture
 
 proc getPooledTransactionsUserHandler(peer: Peer; reqId: int;
                                       txHashes: seq[Hash256]): Future[void] {.
     gcsafe, stackTrace: false, gcsafe, raises: [].} =
-  iterator getPooledTransactionsUserHandler_8942260890(
+  iterator getPooledTransactionsUserHandler_7079988666(
       chronosInternalRetFuture: FutureBase; :envP): FutureBase {.closure,
       gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -1328,33 +1158,24 @@ proc getPooledTransactionsUserHandler(peer: Peer; reqId: int;
       bind logIMPL, bindSym, brForceOpen
       try:
         block chroniclesLogStmt:
-          if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-            break chroniclesLogStmt
-          var record_8942260934:
+          var record_7079988710:
             defaultChroniclesStreamLogRecord
           mixin activateOutput
-          record_8942260934 = default(typeof(record_8942260934))
-          if {.gcsafe.}:
-            addr defaultChroniclesStreamOutputs
-          [][0].outFile ==
-              nil:
-            openOutput( {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0])
-          initLogRecord(record_8942260934, LogLevel(3), "eth66",
+          record_7079988710 = default(typeof(record_7079988710))
+          discard
+          initLogRecord(record_7079988710, LogLevel(INFO), "eth66",
                         "<< [eth/66] Received GetPooledTransactions (0x09)")
-          setProperty(record_8942260934, "tid", getLogThreadId())
-          setProperty(record_8942260934, "file", "eth66.nim:241")
+          setProperty(record_7079988710, "tid", getLogThreadId())
           mixin setProperty, formatItIMPL
-          setProperty(record_8942260934, "peer", $peer.remote)
+          setProperty(record_7079988710, "peer", $peer.remote)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942260934, "hashes", len(txHashes))
+          setProperty(record_7079988710, "hashes", len(txHashes))
           logAllDynamicProperties(
-            defaultChroniclesStream, record_8942260934)
-          flushRecord(record_8942260934)
-      except CatchableError as err`gensym735:
+            defaultChroniclesStream, record_7079988710)
+          flushRecord(record_7079988710)
+      except CatchableError as err`gensym605:
         logLoggingFailure(cstring("<< [eth/66] Received GetPooledTransactions (0x09)"),
-                          err`gensym735)
+                          err`gensym605)
       let ctx = cast[ref[EthWireBase:ObjectType]](getNetworkState(peer.network,
           eth66Protocol))
       let txs = getPooledTxs(ctx, txHashes)
@@ -1363,72 +1184,54 @@ proc getPooledTransactionsUserHandler(peer: Peer; reqId: int;
         bind logIMPL, bindSym, brForceOpen
         try:
           block chroniclesLogStmt:
-            if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-              break chroniclesLogStmt
-            var record_8942261039:
+            var record_7079988799:
               defaultChroniclesStreamLogRecord
             mixin activateOutput
-            record_8942261039 = default(typeof(record_8942261039))
-            if {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0].outFile ==
-                nil:
-              openOutput( {.gcsafe.}:
-                addr defaultChroniclesStreamOutputs
-              [][0])
-            initLogRecord(record_8942261039, LogLevel(3), "eth66",
+            record_7079988799 = default(typeof(record_7079988799))
+            discard
+            initLogRecord(record_7079988799, LogLevel(INFO), "eth66",
                           ">> [eth/66] Replying with PooledTransactions (0x0a)")
-            setProperty(record_8942261039, "tid", getLogThreadId())
-            setProperty(record_8942261039, "file", "eth66.nim:247")
+            setProperty(record_7079988799, "tid", getLogThreadId())
             mixin setProperty, formatItIMPL
-            setProperty(record_8942261039, "peer", $peer.remote)
+            setProperty(record_7079988799, "peer", $peer.remote)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942261039, "sent", len(txs))
+            setProperty(record_7079988799, "sent", len(txs))
             mixin setProperty, formatItIMPL
-            setProperty(record_8942261039, "requested", len(txHashes))
+            setProperty(record_7079988799, "requested", len(txHashes))
             logAllDynamicProperties(
-              defaultChroniclesStream, record_8942261039)
-            flushRecord(record_8942261039)
-        except CatchableError as err`gensym757:
+              defaultChroniclesStream, record_7079988799)
+            flushRecord(record_7079988799)
+        except CatchableError as err`gensym623:
           logLoggingFailure(cstring(">> [eth/66] Replying with PooledTransactions (0x0a)"),
-                            err`gensym757)
+                            err`gensym623)
       else:
         bind logIMPL, bindSym, brForceOpen
         try:
           block chroniclesLogStmt:
-            if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-              break chroniclesLogStmt
-            var record_8942261149:
+            var record_7079988893:
               defaultChroniclesStreamLogRecord
             mixin activateOutput
-            record_8942261149 = default(typeof(record_8942261149))
-            if {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0].outFile ==
-                nil:
-              openOutput( {.gcsafe.}:
-                addr defaultChroniclesStreamOutputs
-              [][0])
-            initLogRecord(record_8942261149, LogLevel(3), "eth66", ">> [eth/66] Replying EMPTY PooledTransactions (0x0a)")
-            setProperty(record_8942261149, "tid", getLogThreadId())
-            setProperty(record_8942261149, "file", "eth66.nim:250")
+            record_7079988893 = default(typeof(record_7079988893))
+            discard
+            initLogRecord(record_7079988893, LogLevel(INFO), "eth66", ">> [eth/66] Replying EMPTY PooledTransactions (0x0a)")
+            setProperty(record_7079988893, "tid", getLogThreadId())
             mixin setProperty, formatItIMPL
-            setProperty(record_8942261149, "peer", $peer.remote)
+            setProperty(record_7079988893, "peer", $peer.remote)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942261149, "sent", 0)
+            setProperty(record_7079988893, "sent", 0)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942261149, "requested", len(txHashes))
+            setProperty(record_7079988893, "requested", len(txHashes))
             logAllDynamicProperties(
-              defaultChroniclesStream, record_8942261149)
-            flushRecord(record_8942261149)
-        except CatchableError as err`gensym779:
+              defaultChroniclesStream, record_7079988893)
+            flushRecord(record_7079988893)
+        except CatchableError as err`gensym641:
           logLoggingFailure(cstring(">> [eth/66] Replying EMPTY PooledTransactions (0x0a)"),
-                            err`gensym779)
-      chronosInternalRetFuture.internalChild = pooledTransactions(response, txs)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+                            err`gensym641)
+      chronosInternalRetFuture.child = pooledTransactions(response, txs)
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "eth66.nim", line: 241, column: 6).filename,
         (filename: "eth66.nim", line: 241, column: 6).line))
@@ -1437,17 +1240,17 @@ proc getPooledTransactionsUserHandler(peer: Peer; reqId: int;
     newFutureImpl(srcLocImpl("getPooledTransactionsUserHandler", (
         filename: "eth66.nim", line: 241, column: 6).filename, (
         filename: "eth66.nim", line: 241, column: 6).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (getPooledTransactionsUserHandler_8942260890, :env)
+    (getPooledTransactionsUserHandler_7079988666, :env)
   futureContinue(resultFuture)
   return resultFuture
 
 proc getNodeDataUserHandler(peer: Peer; nodeHashes: seq[Hash256]): Future[void] {.
     gcsafe, stackTrace: false, gcsafe, raises: [].} =
-  iterator getNodeDataUserHandler_8942261267(
+  iterator getNodeDataUserHandler_7079988995(
       chronosInternalRetFuture: FutureBase; :envP): FutureBase {.closure,
       gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -1469,73 +1272,55 @@ proc getNodeDataUserHandler(peer: Peer; nodeHashes: seq[Hash256]): Future[void] 
       bind logIMPL, bindSym, brForceOpen
       try:
         block chroniclesLogStmt:
-          if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-            break chroniclesLogStmt
-          var record_8942261301:
+          var record_7079989029:
             defaultChroniclesStreamLogRecord
           mixin activateOutput
-          record_8942261301 = default(typeof(record_8942261301))
-          if {.gcsafe.}:
-            addr defaultChroniclesStreamOutputs
-          [][0].outFile ==
-              nil:
-            openOutput( {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0])
-          initLogRecord(record_8942261301, LogLevel(3), "eth66",
+          record_7079989029 = default(typeof(record_7079989029))
+          discard
+          initLogRecord(record_7079989029, LogLevel(INFO), "eth66",
                         "<< [eth/66] Received GetNodeData (0x0d)")
-          setProperty(record_8942261301, "tid", getLogThreadId())
-          setProperty(record_8942261301, "file", "eth66.nim:262")
+          setProperty(record_7079989029, "tid", getLogThreadId())
           mixin setProperty, formatItIMPL
-          setProperty(record_8942261301, "peer", $peer.remote)
+          setProperty(record_7079989029, "peer", $peer.remote)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942261301, "hashes", len(nodeHashes))
+          setProperty(record_7079989029, "hashes", len(nodeHashes))
           logAllDynamicProperties(
-            defaultChroniclesStream, record_8942261301)
-          flushRecord(record_8942261301)
-      except CatchableError as err`gensym812:
+            defaultChroniclesStream, record_7079989029)
+          flushRecord(record_7079989029)
+      except CatchableError as err`gensym669:
         logLoggingFailure(cstring("<< [eth/66] Received GetNodeData (0x0d)"),
-                          err`gensym812)
+                          err`gensym669)
       let ctx = cast[ref[EthWireBase:ObjectType]](getNetworkState(peer.network,
           eth66Protocol))
       let data = getStorageNodes(ctx, nodeHashes)
       bind logIMPL, bindSym, brForceOpen
       try:
         block chroniclesLogStmt:
-          if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-            break chroniclesLogStmt
-          var record_8942261400:
+          var record_7079989112:
             defaultChroniclesStreamLogRecord
           mixin activateOutput
-          record_8942261400 = default(typeof(record_8942261400))
-          if {.gcsafe.}:
-            addr defaultChroniclesStreamOutputs
-          [][0].outFile ==
-              nil:
-            openOutput( {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0])
-          initLogRecord(record_8942261400, LogLevel(3), "eth66",
+          record_7079989112 = default(typeof(record_7079989112))
+          discard
+          initLogRecord(record_7079989112, LogLevel(INFO), "eth66",
                         ">> [eth/66] Replying NodeData (0x0e)")
-          setProperty(record_8942261400, "tid", getLogThreadId())
-          setProperty(record_8942261400, "file", "eth66.nim:268")
+          setProperty(record_7079989112, "tid", getLogThreadId())
           mixin setProperty, formatItIMPL
-          setProperty(record_8942261400, "peer", $peer.remote)
+          setProperty(record_7079989112, "peer", $peer.remote)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942261400, "sent", len(data))
+          setProperty(record_7079989112, "sent", len(data))
           mixin setProperty, formatItIMPL
-          setProperty(record_8942261400, "requested", len(nodeHashes))
+          setProperty(record_7079989112, "requested", len(nodeHashes))
           logAllDynamicProperties(
-            defaultChroniclesStream, record_8942261400)
-          flushRecord(record_8942261400)
-      except CatchableError as err`gensym833:
+            defaultChroniclesStream, record_7079989112)
+          flushRecord(record_7079989112)
+      except CatchableError as err`gensym686:
         logLoggingFailure(cstring(">> [eth/66] Replying NodeData (0x0e)"),
-                          err`gensym833)
-      chronosInternalRetFuture.internalChild = nodeData(peer, data)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+                          err`gensym686)
+      chronosInternalRetFuture.child = nodeData(peer, data)
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "eth66.nim", line: 262, column: 4).filename,
         (filename: "eth66.nim", line: 262, column: 4).line))
@@ -1544,17 +1329,17 @@ proc getNodeDataUserHandler(peer: Peer; nodeHashes: seq[Hash256]): Future[void] 
     newFutureImpl(srcLocImpl("getNodeDataUserHandler", (filename: "eth66.nim",
         line: 262, column: 4).filename, (filename: "eth66.nim", line: 262,
         column: 4).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (getNodeDataUserHandler_8942261267, :env)
+    (getNodeDataUserHandler_7079988995, :env)
   futureContinue(resultFuture)
   return resultFuture
 
 proc nodeDataUserHandler(peer: Peer; data: seq[Blob]): Future[void] {.gcsafe,
     stackTrace: false, gcsafe, raises: [].} =
-  iterator nodeDataUserHandler_8942261530(chronosInternalRetFuture: FutureBase;
+  iterator nodeDataUserHandler_7079989217(chronosInternalRetFuture: FutureBase;
       :envP): FutureBase {.closure, gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
       {.fatal: "You should not reference the `result` variable inside" &
@@ -1575,33 +1360,24 @@ proc nodeDataUserHandler(peer: Peer; data: seq[Blob]): Future[void] {.gcsafe,
       bind logIMPL, bindSym, brForceOpen
       try:
         block chroniclesLogStmt:
-          if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-            break chroniclesLogStmt
-          var record_8942261564:
+          var record_7079989251:
             defaultChroniclesStreamLogRecord
           mixin activateOutput
-          record_8942261564 = default(typeof(record_8942261564))
-          if {.gcsafe.}:
-            addr defaultChroniclesStreamOutputs
-          [][0].outFile ==
-              nil:
-            openOutput( {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0])
-          initLogRecord(record_8942261564, LogLevel(3), "eth66",
+          record_7079989251 = default(typeof(record_7079989251))
+          discard
+          initLogRecord(record_7079989251, LogLevel(INFO), "eth66",
                         "<< [eth/66] Received NodeData (0x0e)")
-          setProperty(record_8942261564, "tid", getLogThreadId())
-          setProperty(record_8942261564, "file", "eth66.nim:275")
+          setProperty(record_7079989251, "tid", getLogThreadId())
           mixin setProperty, formatItIMPL
-          setProperty(record_8942261564, "peer", $peer.remote)
+          setProperty(record_7079989251, "peer", $peer.remote)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942261564, "bytes", len(data))
+          setProperty(record_7079989251, "bytes", len(data))
           logAllDynamicProperties(
-            defaultChroniclesStream, record_8942261564)
-          flushRecord(record_8942261564)
-      except CatchableError as err`gensym865:
+            defaultChroniclesStream, record_7079989251)
+          flushRecord(record_7079989251)
+      except CatchableError as err`gensym713:
         logLoggingFailure(cstring("<< [eth/66] Received NodeData (0x0e)"),
-                          err`gensym865)
+                          err`gensym713)
       let ctx = cast[ref[EthWireBase:ObjectType]](getNetworkState(peer.network,
           eth66Protocol))
       handleNodeData(ctx, peer, data)
@@ -1613,17 +1389,17 @@ proc nodeDataUserHandler(peer: Peer; data: seq[Blob]): Future[void] {.gcsafe,
     newFutureImpl(srcLocImpl("nodeDataUserHandler", (filename: "eth66.nim",
         line: 275, column: 4).filename, (filename: "eth66.nim", line: 275,
         column: 4).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (nodeDataUserHandler_8942261530, :env)
+    (nodeDataUserHandler_7079989217, :env)
   futureContinue(resultFuture)
   return resultFuture
 
 proc getReceiptsUserHandler(peer: Peer; reqId: int; hashes: seq[Hash256]): Future[
     void] {.gcsafe, stackTrace: false, gcsafe, raises: [].} =
-  iterator getReceiptsUserHandler_8942261672(
+  iterator getReceiptsUserHandler_7079989343(
       chronosInternalRetFuture: FutureBase; :envP): FutureBase {.closure,
       gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -1646,33 +1422,24 @@ proc getReceiptsUserHandler(peer: Peer; reqId: int; hashes: seq[Hash256]): Futur
       bind logIMPL, bindSym, brForceOpen
       try:
         block chroniclesLogStmt:
-          if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-            break chroniclesLogStmt
-          var record_8942261716:
+          var record_7079989387:
             defaultChroniclesStreamLogRecord
           mixin activateOutput
-          record_8942261716 = default(typeof(record_8942261716))
-          if {.gcsafe.}:
-            addr defaultChroniclesStreamOutputs
-          [][0].outFile ==
-              nil:
-            openOutput( {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0])
-          initLogRecord(record_8942261716, LogLevel(3), "eth66",
+          record_7079989387 = default(typeof(record_7079989387))
+          discard
+          initLogRecord(record_7079989387, LogLevel(INFO), "eth66",
                         "<< [eth/66] Received GetReceipts (0x0f)")
-          setProperty(record_8942261716, "tid", getLogThreadId())
-          setProperty(record_8942261716, "file", "eth66.nim:283")
+          setProperty(record_7079989387, "tid", getLogThreadId())
           mixin setProperty, formatItIMPL
-          setProperty(record_8942261716, "peer", $peer.remote)
+          setProperty(record_7079989387, "peer", $peer.remote)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942261716, "hashes", len(hashes))
+          setProperty(record_7079989387, "hashes", len(hashes))
           logAllDynamicProperties(
-            defaultChroniclesStream, record_8942261716)
-          flushRecord(record_8942261716)
-      except CatchableError as err`gensym893:
+            defaultChroniclesStream, record_7079989387)
+          flushRecord(record_7079989387)
+      except CatchableError as err`gensym736:
         logLoggingFailure(cstring("<< [eth/66] Received GetReceipts (0x0f)"),
-                          err`gensym893)
+                          err`gensym736)
       let ctx = cast[ref[EthWireBase:ObjectType]](getNetworkState(peer.network,
           eth66Protocol))
       let rec = getReceipts(ctx, hashes)
@@ -1681,73 +1448,55 @@ proc getReceiptsUserHandler(peer: Peer; reqId: int; hashes: seq[Hash256]): Futur
         bind logIMPL, bindSym, brForceOpen
         try:
           block chroniclesLogStmt:
-            if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-              break chroniclesLogStmt
-            var record_8942261822:
+            var record_7079989476:
               defaultChroniclesStreamLogRecord
             mixin activateOutput
-            record_8942261822 = default(typeof(record_8942261822))
-            if {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0].outFile ==
-                nil:
-              openOutput( {.gcsafe.}:
-                addr defaultChroniclesStreamOutputs
-              [][0])
-            initLogRecord(record_8942261822, LogLevel(3), "eth66",
+            record_7079989476 = default(typeof(record_7079989476))
+            discard
+            initLogRecord(record_7079989476, LogLevel(INFO), "eth66",
                           ">> [eth/66] Replying with Receipts (0x10)")
-            setProperty(record_8942261822, "tid", getLogThreadId())
-            setProperty(record_8942261822, "file", "eth66.nim:289")
+            setProperty(record_7079989476, "tid", getLogThreadId())
             mixin setProperty, formatItIMPL
-            setProperty(record_8942261822, "peer", $peer.remote)
+            setProperty(record_7079989476, "peer", $peer.remote)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942261822, "sent", len(rec))
+            setProperty(record_7079989476, "sent", len(rec))
             mixin setProperty, formatItIMPL
-            setProperty(record_8942261822, "requested", len(hashes))
+            setProperty(record_7079989476, "requested", len(hashes))
             logAllDynamicProperties(
-              defaultChroniclesStream, record_8942261822)
-            flushRecord(record_8942261822)
-        except CatchableError as err`gensym915:
+              defaultChroniclesStream, record_7079989476)
+            flushRecord(record_7079989476)
+        except CatchableError as err`gensym754:
           logLoggingFailure(cstring(">> [eth/66] Replying with Receipts (0x10)"),
-                            err`gensym915)
+                            err`gensym754)
       else:
         bind logIMPL, bindSym, brForceOpen
         try:
           block chroniclesLogStmt:
-            if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-              break chroniclesLogStmt
-            var record_8942261932:
+            var record_7079989570:
               defaultChroniclesStreamLogRecord
             mixin activateOutput
-            record_8942261932 = default(typeof(record_8942261932))
-            if {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0].outFile ==
-                nil:
-              openOutput( {.gcsafe.}:
-                addr defaultChroniclesStreamOutputs
-              [][0])
-            initLogRecord(record_8942261932, LogLevel(3), "eth66",
+            record_7079989570 = default(typeof(record_7079989570))
+            discard
+            initLogRecord(record_7079989570, LogLevel(INFO), "eth66",
                           ">> [eth/66] Replying EMPTY Receipts (0x10)")
-            setProperty(record_8942261932, "tid", getLogThreadId())
-            setProperty(record_8942261932, "file", "eth66.nim:292")
+            setProperty(record_7079989570, "tid", getLogThreadId())
             mixin setProperty, formatItIMPL
-            setProperty(record_8942261932, "peer", $peer.remote)
+            setProperty(record_7079989570, "peer", $peer.remote)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942261932, "sent", 0)
+            setProperty(record_7079989570, "sent", 0)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942261932, "requested", len(hashes))
+            setProperty(record_7079989570, "requested", len(hashes))
             logAllDynamicProperties(
-              defaultChroniclesStream, record_8942261932)
-            flushRecord(record_8942261932)
-        except CatchableError as err`gensym937:
+              defaultChroniclesStream, record_7079989570)
+            flushRecord(record_7079989570)
+        except CatchableError as err`gensym772:
           logLoggingFailure(cstring(">> [eth/66] Replying EMPTY Receipts (0x10)"),
-                            err`gensym937)
-      chronosInternalRetFuture.internalChild = receipts(response, rec)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+                            err`gensym772)
+      chronosInternalRetFuture.child = receipts(response, rec)
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "eth66.nim", line: 283, column: 6).filename,
         (filename: "eth66.nim", line: 283, column: 6).line))
@@ -1756,17 +1505,17 @@ proc getReceiptsUserHandler(peer: Peer; reqId: int; hashes: seq[Hash256]): Futur
     newFutureImpl(srcLocImpl("getReceiptsUserHandler", (filename: "eth66.nim",
         line: 283, column: 6).filename, (filename: "eth66.nim", line: 283,
         column: 6).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (getReceiptsUserHandler_8942261672, :env)
+    (getReceiptsUserHandler_7079989343, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc statusThunk(peer: Peer; _`gensym56: int; data`gensym56: Rlp): Future[void] {.
+proc statusThunk(peer: Peer; __7079989675: int; data`gensym56: Rlp): Future[void] {.
     gcsafe, raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator statusThunk_8942262068(chronosInternalRetFuture: FutureBase; :envP): FutureBase {.
+  iterator statusThunk_7079989672(chronosInternalRetFuture: FutureBase; :envP): FutureBase {.
       closure, gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
       {.fatal: "You should not reference the `result` variable inside" &
@@ -1774,7 +1523,7 @@ proc statusThunk(peer: Peer; _`gensym56: int; data`gensym56: Rlp): Future[void] 
 
     block:
       var rlp = data`gensym56
-      var msg: statusObj
+      var msg {.noinit.}: statusObj
       tryEnterList(rlp)
       msg.ethVersionArg = checkedRlpRead(peer, rlp, uint)
       msg.networkId = checkedRlpRead(peer, rlp, NetworkId)
@@ -1782,13 +1531,13 @@ proc statusThunk(peer: Peer; _`gensym56: int; data`gensym56: Rlp): Future[void] 
       msg.bestHash = checkedRlpRead(peer, rlp, Hash256)
       msg.genesisHash = checkedRlpRead(peer, rlp, Hash256)
       msg.forkId = checkedRlpRead(peer, rlp, ChainForkId)
-      chronosInternalRetFuture.internalChild = statusUserHandler(peer,
+      chronosInternalRetFuture.child = statusUserHandler(peer,
           msg.ethVersionArg, msg.networkId, msg.totalDifficulty, msg.bestHash,
           msg.genesisHash, msg.forkId)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "rlpx.nim", line: 966, column: 8).filename,
         (filename: "rlpx.nim", line: 966, column: 8).line))
@@ -1796,17 +1545,17 @@ proc statusThunk(peer: Peer; _`gensym56: int; data`gensym56: Rlp): Future[void] 
   let resultFuture =
     newFutureImpl(srcLocImpl("statusThunk", (filename: "rlpx.nim", line: 966,
         column: 8).filename, (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (statusThunk_8942262068, :env)
+    (statusThunk_7079989672, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc newBlockHashesThunk(peer: Peer; _`gensym63: int; data`gensym63: Rlp): Future[
+proc newBlockHashesThunk(peer: Peer; __7079989841: int; data`gensym63: Rlp): Future[
     void] {.gcsafe, raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator newBlockHashesThunk_8942262420(chronosInternalRetFuture: FutureBase;
+  iterator newBlockHashesThunk_7079989838(chronosInternalRetFuture: FutureBase;
       :envP): FutureBase {.closure, gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
       {.fatal: "You should not reference the `result` variable inside" &
@@ -1814,14 +1563,14 @@ proc newBlockHashesThunk(peer: Peer; _`gensym63: int; data`gensym63: Rlp): Futur
 
     block:
       var rlp = data`gensym63
-      var msg: newBlockHashesObj
+      var msg {.noinit.}: newBlockHashesObj
       msg.hashes = checkedRlpRead(peer, rlp, openArray[NewBlockHashesAnnounce])
-      chronosInternalRetFuture.internalChild = newBlockHashesUserHandler(peer,
+      chronosInternalRetFuture.child = newBlockHashesUserHandler(peer,
           msg.hashes)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "rlpx.nim", line: 966, column: 8).filename,
         (filename: "rlpx.nim", line: 966, column: 8).line))
@@ -1830,17 +1579,17 @@ proc newBlockHashesThunk(peer: Peer; _`gensym63: int; data`gensym63: Rlp): Futur
     newFutureImpl(srcLocImpl("newBlockHashesThunk", (filename: "rlpx.nim",
         line: 966, column: 8).filename,
                              (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (newBlockHashesThunk_8942262420, :env)
+    (newBlockHashesThunk_7079989838, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc transactionsThunk(peer: Peer; _`gensym69: int; data`gensym69: Rlp): Future[
+proc transactionsThunk(peer: Peer; __7079990019: int; data`gensym69: Rlp): Future[
     void] {.gcsafe, raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator transactionsThunk_8942262593(chronosInternalRetFuture: FutureBase;
+  iterator transactionsThunk_7079990016(chronosInternalRetFuture: FutureBase;
                                         :envP): FutureBase {.closure, gcsafe,
       raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -1849,14 +1598,14 @@ proc transactionsThunk(peer: Peer; _`gensym69: int; data`gensym69: Rlp): Future[
 
     block:
       var rlp = data`gensym69
-      var msg: transactionsObj
+      var msg {.noinit.}: transactionsObj
       msg.transactions = checkedRlpRead(peer, rlp, openArray[Transaction])
-      chronosInternalRetFuture.internalChild = transactionsUserHandler(peer,
+      chronosInternalRetFuture.child = transactionsUserHandler(peer,
           msg.transactions)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "rlpx.nim", line: 966, column: 8).filename,
         (filename: "rlpx.nim", line: 966, column: 8).line))
@@ -1865,17 +1614,17 @@ proc transactionsThunk(peer: Peer; _`gensym69: int; data`gensym69: Rlp): Future[
     newFutureImpl(srcLocImpl("transactionsThunk", (filename: "rlpx.nim",
         line: 966, column: 8).filename,
                              (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (transactionsThunk_8942262593, :env)
+    (transactionsThunk_7079990016, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc blockHeadersThunk(peer: Peer; _`gensym76: int; data`gensym76: Rlp): Future[
+proc blockHeadersThunk(peer: Peer; __7079990062: int; data`gensym76: Rlp): Future[
     void] {.gcsafe, raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator blockHeadersThunk_8942262667(chronosInternalRetFuture: FutureBase;
+  iterator blockHeadersThunk_7079990059(chronosInternalRetFuture: FutureBase;
                                         :envP): FutureBase {.closure, gcsafe,
       raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -1884,7 +1633,7 @@ proc blockHeadersThunk(peer: Peer; _`gensym76: int; data`gensym76: Rlp): Future[
 
     block:
       var rlp = data`gensym76
-      var msg: blockHeadersObj
+      var msg {.noinit.}: blockHeadersObj
       tryEnterList(rlp)
       let reqId = readImpl(rlp, int)
       msg.headers = checkedRlpRead(peer, rlp, openArray[BlockHeader])
@@ -1898,17 +1647,17 @@ proc blockHeadersThunk(peer: Peer; _`gensym76: int; data`gensym76: Rlp): Future[
     newFutureImpl(srcLocImpl("blockHeadersThunk", (filename: "rlpx.nim",
         line: 966, column: 8).filename,
                              (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (blockHeadersThunk_8942262667, :env)
+    (blockHeadersThunk_7079990059, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc getBlockHeadersThunk(peer: Peer; _`gensym86: int; data`gensym86: Rlp): Future[
+proc getBlockHeadersThunk(peer: Peer; __7079990116: int; data`gensym86: Rlp): Future[
     void] {.gcsafe, raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator getBlockHeadersThunk_8942262754(chronosInternalRetFuture: FutureBase;
+  iterator getBlockHeadersThunk_7079990113(chronosInternalRetFuture: FutureBase;
       :envP): FutureBase {.closure, gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
       {.fatal: "You should not reference the `result` variable inside" &
@@ -1916,16 +1665,16 @@ proc getBlockHeadersThunk(peer: Peer; _`gensym86: int; data`gensym86: Rlp): Futu
 
     block:
       var rlp = data`gensym86
-      var msg: getBlockHeadersObj
+      var msg {.noinit.}: getBlockHeadersObj
       tryEnterList(rlp)
       let reqId = readImpl(rlp, int)
       msg.request = checkedRlpRead(peer, rlp, BlocksRequest)
-      chronosInternalRetFuture.internalChild = getBlockHeadersUserHandler(peer,
-          reqId, msg.request)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+      chronosInternalRetFuture.child = getBlockHeadersUserHandler(peer, reqId,
+          msg.request)
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "rlpx.nim", line: 966, column: 8).filename,
         (filename: "rlpx.nim", line: 966, column: 8).line))
@@ -1934,17 +1683,17 @@ proc getBlockHeadersThunk(peer: Peer; _`gensym86: int; data`gensym86: Rlp): Futu
     newFutureImpl(srcLocImpl("getBlockHeadersThunk", (filename: "rlpx.nim",
         line: 966, column: 8).filename,
                              (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (getBlockHeadersThunk_8942262754, :env)
+    (getBlockHeadersThunk_7079990113, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc blockBodiesThunk(peer: Peer; _`gensym93: int; data`gensym93: Rlp): Future[
+proc blockBodiesThunk(peer: Peer; __7079990322: int; data`gensym93: Rlp): Future[
     void] {.gcsafe, raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator blockBodiesThunk_8942262980(chronosInternalRetFuture: FutureBase;
+  iterator blockBodiesThunk_7079990319(chronosInternalRetFuture: FutureBase;
                                        :envP): FutureBase {.closure, gcsafe,
       raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -1953,7 +1702,7 @@ proc blockBodiesThunk(peer: Peer; _`gensym93: int; data`gensym93: Rlp): Future[
 
     block:
       var rlp = data`gensym93
-      var msg: blockBodiesObj
+      var msg {.noinit.}: blockBodiesObj
       tryEnterList(rlp)
       let reqId = readImpl(rlp, int)
       msg.blocks = checkedRlpRead(peer, rlp, openArray[BlockBody])
@@ -1967,17 +1716,17 @@ proc blockBodiesThunk(peer: Peer; _`gensym93: int; data`gensym93: Rlp): Future[
     newFutureImpl(srcLocImpl("blockBodiesThunk", (filename: "rlpx.nim",
         line: 966, column: 8).filename,
                              (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (blockBodiesThunk_8942262980, :env)
+    (blockBodiesThunk_7079990319, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc getBlockBodiesThunk(peer: Peer; _`gensym103: int; data`gensym103: Rlp): Future[
+proc getBlockBodiesThunk(peer: Peer; __7079990376: int; data`gensym103: Rlp): Future[
     void] {.gcsafe, raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator getBlockBodiesThunk_8942263210(chronosInternalRetFuture: FutureBase;
+  iterator getBlockBodiesThunk_7079990373(chronosInternalRetFuture: FutureBase;
       :envP): FutureBase {.closure, gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
       {.fatal: "You should not reference the `result` variable inside" &
@@ -1985,16 +1734,16 @@ proc getBlockBodiesThunk(peer: Peer; _`gensym103: int; data`gensym103: Rlp): Fut
 
     block:
       var rlp = data`gensym103
-      var msg: getBlockBodiesObj
+      var msg {.noinit.}: getBlockBodiesObj
       tryEnterList(rlp)
       let reqId = readImpl(rlp, int)
       msg.hashes = checkedRlpRead(peer, rlp, openArray[Hash256])
-      chronosInternalRetFuture.internalChild = getBlockBodiesUserHandler(peer,
-          reqId, msg.hashes)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+      chronosInternalRetFuture.child = getBlockBodiesUserHandler(peer, reqId,
+          msg.hashes)
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "rlpx.nim", line: 966, column: 8).filename,
         (filename: "rlpx.nim", line: 966, column: 8).line))
@@ -2003,17 +1752,17 @@ proc getBlockBodiesThunk(peer: Peer; _`gensym103: int; data`gensym103: Rlp): Fut
     newFutureImpl(srcLocImpl("getBlockBodiesThunk", (filename: "rlpx.nim",
         line: 966, column: 8).filename,
                              (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (getBlockBodiesThunk_8942263210, :env)
+    (getBlockBodiesThunk_7079990373, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc newBlockThunk(peer: Peer; _`gensym110: int; data`gensym110: Rlp): Future[
+proc newBlockThunk(peer: Peer; __7079990426: int; data`gensym110: Rlp): Future[
     void] {.gcsafe, raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator newBlockThunk_8942263284(chronosInternalRetFuture: FutureBase; :envP): FutureBase {.
+  iterator newBlockThunk_7079990423(chronosInternalRetFuture: FutureBase; :envP): FutureBase {.
       closure, gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
       {.fatal: "You should not reference the `result` variable inside" &
@@ -2021,16 +1770,16 @@ proc newBlockThunk(peer: Peer; _`gensym110: int; data`gensym110: Rlp): Future[
 
     block:
       var rlp = data`gensym110
-      var msg: newBlockObj
+      var msg {.noinit.}: newBlockObj
       tryEnterList(rlp)
       msg.blk = checkedRlpRead(peer, rlp, EthBlock)
       msg.totalDifficulty = checkedRlpRead(peer, rlp, DifficultyInt)
-      chronosInternalRetFuture.internalChild = newBlockUserHandler(peer,
-          msg.blk, msg.totalDifficulty)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+      chronosInternalRetFuture.child = newBlockUserHandler(peer, msg.blk,
+          msg.totalDifficulty)
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "rlpx.nim", line: 966, column: 8).filename,
         (filename: "rlpx.nim", line: 966, column: 8).line))
@@ -2038,18 +1787,18 @@ proc newBlockThunk(peer: Peer; _`gensym110: int; data`gensym110: Rlp): Future[
   let resultFuture =
     newFutureImpl(srcLocImpl("newBlockThunk", (filename: "rlpx.nim", line: 966,
         column: 8).filename, (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (newBlockThunk_8942263284, :env)
+    (newBlockThunk_7079990423, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc newPooledTransactionHashesThunk(peer: Peer; _`gensym116: int;
+proc newPooledTransactionHashesThunk(peer: Peer; __7079990474: int;
                                      data`gensym116: Rlp): Future[void] {.
     gcsafe, raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator newPooledTransactionHashesThunk_8942263350(
+  iterator newPooledTransactionHashesThunk_7079990471(
       chronosInternalRetFuture: FutureBase; :envP): FutureBase {.closure,
       gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -2058,14 +1807,14 @@ proc newPooledTransactionHashesThunk(peer: Peer; _`gensym116: int;
 
     block:
       var rlp = data`gensym116
-      var msg: newPooledTransactionHashesObj
+      var msg {.noinit.}: newPooledTransactionHashesObj
       msg.txHashes = checkedRlpRead(peer, rlp, openArray[Hash256])
-      chronosInternalRetFuture.internalChild = newPooledTransactionHashesUserHandler(
+      chronosInternalRetFuture.child = newPooledTransactionHashesUserHandler(
           peer, msg.txHashes)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "rlpx.nim", line: 966, column: 8).filename,
         (filename: "rlpx.nim", line: 966, column: 8).line))
@@ -2074,17 +1823,17 @@ proc newPooledTransactionHashesThunk(peer: Peer; _`gensym116: int;
     newFutureImpl(srcLocImpl("newPooledTransactionHashesThunk", (
         filename: "rlpx.nim", line: 966, column: 8).filename,
                              (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (newPooledTransactionHashesThunk_8942263350, :env)
+    (newPooledTransactionHashesThunk_7079990471, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc pooledTransactionsThunk(peer: Peer; _`gensym123: int; data`gensym123: Rlp): Future[
+proc pooledTransactionsThunk(peer: Peer; __7079990517: int; data`gensym123: Rlp): Future[
     void] {.gcsafe, raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator pooledTransactionsThunk_8942263404(
+  iterator pooledTransactionsThunk_7079990514(
       chronosInternalRetFuture: FutureBase; :envP): FutureBase {.closure,
       gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -2093,7 +1842,7 @@ proc pooledTransactionsThunk(peer: Peer; _`gensym123: int; data`gensym123: Rlp):
 
     block:
       var rlp = data`gensym123
-      var msg: pooledTransactionsObj
+      var msg {.noinit.}: pooledTransactionsObj
       tryEnterList(rlp)
       let reqId = readImpl(rlp, int)
       msg.transactions = checkedRlpRead(peer, rlp, openArray[Transaction])
@@ -2107,18 +1856,18 @@ proc pooledTransactionsThunk(peer: Peer; _`gensym123: int; data`gensym123: Rlp):
     newFutureImpl(srcLocImpl("pooledTransactionsThunk", (filename: "rlpx.nim",
         line: 966, column: 8).filename,
                              (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (pooledTransactionsThunk_8942263404, :env)
+    (pooledTransactionsThunk_7079990514, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc getPooledTransactionsThunk(peer: Peer; _`gensym133: int;
+proc getPooledTransactionsThunk(peer: Peer; __7079990571: int;
                                 data`gensym133: Rlp): Future[void] {.gcsafe,
     raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator getPooledTransactionsThunk_8942263478(
+  iterator getPooledTransactionsThunk_7079990568(
       chronosInternalRetFuture: FutureBase; :envP): FutureBase {.closure,
       gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -2127,16 +1876,16 @@ proc getPooledTransactionsThunk(peer: Peer; _`gensym133: int;
 
     block:
       var rlp = data`gensym133
-      var msg: getPooledTransactionsObj
+      var msg {.noinit.}: getPooledTransactionsObj
       tryEnterList(rlp)
       let reqId = readImpl(rlp, int)
       msg.txHashes = checkedRlpRead(peer, rlp, openArray[Hash256])
-      chronosInternalRetFuture.internalChild = getPooledTransactionsUserHandler(
-          peer, reqId, msg.txHashes)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+      chronosInternalRetFuture.child = getPooledTransactionsUserHandler(peer,
+          reqId, msg.txHashes)
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "rlpx.nim", line: 966, column: 8).filename,
         (filename: "rlpx.nim", line: 966, column: 8).line))
@@ -2145,17 +1894,17 @@ proc getPooledTransactionsThunk(peer: Peer; _`gensym133: int;
     newFutureImpl(srcLocImpl("getPooledTransactionsThunk", (
         filename: "rlpx.nim", line: 966, column: 8).filename,
                              (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (getPooledTransactionsThunk_8942263478, :env)
+    (getPooledTransactionsThunk_7079990568, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc getNodeDataThunk(peer: Peer; _`gensym139: int; data`gensym139: Rlp): Future[
+proc getNodeDataThunk(peer: Peer; __7079990621: int; data`gensym139: Rlp): Future[
     void] {.gcsafe, raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator getNodeDataThunk_8942263539(chronosInternalRetFuture: FutureBase;
+  iterator getNodeDataThunk_7079990618(chronosInternalRetFuture: FutureBase;
                                        :envP): FutureBase {.closure, gcsafe,
       raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -2164,14 +1913,14 @@ proc getNodeDataThunk(peer: Peer; _`gensym139: int; data`gensym139: Rlp): Future
 
     block:
       var rlp = data`gensym139
-      var msg: getNodeDataObj
+      var msg {.noinit.}: getNodeDataObj
       msg.nodeHashes = checkedRlpRead(peer, rlp, openArray[Hash256])
-      chronosInternalRetFuture.internalChild = getNodeDataUserHandler(peer,
+      chronosInternalRetFuture.child = getNodeDataUserHandler(peer,
           msg.nodeHashes)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "rlpx.nim", line: 966, column: 8).filename,
         (filename: "rlpx.nim", line: 966, column: 8).line))
@@ -2180,17 +1929,17 @@ proc getNodeDataThunk(peer: Peer; _`gensym139: int; data`gensym139: Rlp): Future
     newFutureImpl(srcLocImpl("getNodeDataThunk", (filename: "rlpx.nim",
         line: 966, column: 8).filename,
                              (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (getNodeDataThunk_8942263539, :env)
+    (getNodeDataThunk_7079990618, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc nodeDataThunk(peer: Peer; _`gensym145: int; data`gensym145: Rlp): Future[
+proc nodeDataThunk(peer: Peer; __7079990664: int; data`gensym145: Rlp): Future[
     void] {.gcsafe, raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator nodeDataThunk_8942263593(chronosInternalRetFuture: FutureBase; :envP): FutureBase {.
+  iterator nodeDataThunk_7079990661(chronosInternalRetFuture: FutureBase; :envP): FutureBase {.
       closure, gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
       {.fatal: "You should not reference the `result` variable inside" &
@@ -2198,14 +1947,13 @@ proc nodeDataThunk(peer: Peer; _`gensym145: int; data`gensym145: Rlp): Future[
 
     block:
       var rlp = data`gensym145
-      var msg: nodeDataObj
+      var msg {.noinit.}: nodeDataObj
       msg.data = checkedRlpRead(peer, rlp, openArray[Blob])
-      chronosInternalRetFuture.internalChild = nodeDataUserHandler(peer,
-          msg.data)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+      chronosInternalRetFuture.child = nodeDataUserHandler(peer, msg.data)
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "rlpx.nim", line: 966, column: 8).filename,
         (filename: "rlpx.nim", line: 966, column: 8).line))
@@ -2213,17 +1961,17 @@ proc nodeDataThunk(peer: Peer; _`gensym145: int; data`gensym145: Rlp): Future[
   let resultFuture =
     newFutureImpl(srcLocImpl("nodeDataThunk", (filename: "rlpx.nim", line: 966,
         column: 8).filename, (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (nodeDataThunk_8942263593, :env)
+    (nodeDataThunk_7079990661, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc receiptsThunk(peer: Peer; _`gensym152: int; data`gensym152: Rlp): Future[
+proc receiptsThunk(peer: Peer; __7079990707: int; data`gensym152: Rlp): Future[
     void] {.gcsafe, raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator receiptsThunk_8942263678(chronosInternalRetFuture: FutureBase; :envP): FutureBase {.
+  iterator receiptsThunk_7079990704(chronosInternalRetFuture: FutureBase; :envP): FutureBase {.
       closure, gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
       {.fatal: "You should not reference the `result` variable inside" &
@@ -2231,7 +1979,7 @@ proc receiptsThunk(peer: Peer; _`gensym152: int; data`gensym152: Rlp): Future[
 
     block:
       var rlp = data`gensym152
-      var msg: receiptsObj
+      var msg {.noinit.}: receiptsObj
       tryEnterList(rlp)
       let reqId = readImpl(rlp, int)
       msg.receipts = checkedRlpRead(peer, rlp, openArray[seq[Receipt]])
@@ -2244,17 +1992,17 @@ proc receiptsThunk(peer: Peer; _`gensym152: int; data`gensym152: Rlp): Future[
   let resultFuture =
     newFutureImpl(srcLocImpl("receiptsThunk", (filename: "rlpx.nim", line: 966,
         column: 8).filename, (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (receiptsThunk_8942263678, :env)
+    (receiptsThunk_7079990704, :env)
   futureContinue(resultFuture)
   return resultFuture
 
-proc getReceiptsThunk(peer: Peer; _`gensym162: int; data`gensym162: Rlp): Future[
+proc getReceiptsThunk(peer: Peer; __7079990761: int; data`gensym162: Rlp): Future[
     void] {.gcsafe, raises: [RlpError], stackTrace: false, gcsafe, raises: [].} =
-  iterator getReceiptsThunk_8942263799(chronosInternalRetFuture: FutureBase;
+  iterator getReceiptsThunk_7079990758(chronosInternalRetFuture: FutureBase;
                                        :envP): FutureBase {.closure, gcsafe,
       raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
@@ -2263,16 +2011,16 @@ proc getReceiptsThunk(peer: Peer; _`gensym162: int; data`gensym162: Rlp): Future
 
     block:
       var rlp = data`gensym162
-      var msg: getReceiptsObj
+      var msg {.noinit.}: getReceiptsObj
       tryEnterList(rlp)
       let reqId = readImpl(rlp, int)
       msg.hashes = checkedRlpRead(peer, rlp, openArray[Hash256])
-      chronosInternalRetFuture.internalChild = getReceiptsUserHandler(peer,
-          reqId, msg.hashes)
-      yield chronosInternalRetFuture.internalChild
-      if chronosInternalRetFuture.internalMustCancel:
+      chronosInternalRetFuture.child = getReceiptsUserHandler(peer, reqId,
+          msg.hashes)
+      yield chronosInternalRetFuture.child
+      if chronosInternalRetFuture.mustCancel:
         raise (ref CancelledError)(msg: "Future operation cancelled!")
-      internalCheckComplete(chronosInternalRetFuture.internalChild)
+      internalCheckComplete(chronosInternalRetFuture.child)
     complete(cast[Future[void]](chronosInternalRetFuture), srcLocImpl("",
         (filename: "rlpx.nim", line: 966, column: 8).filename,
         (filename: "rlpx.nim", line: 966, column: 8).line))
@@ -2281,11 +2029,11 @@ proc getReceiptsThunk(peer: Peer; _`gensym162: int; data`gensym162: Rlp): Future
     newFutureImpl(srcLocImpl("getReceiptsThunk", (filename: "rlpx.nim",
         line: 966, column: 8).filename,
                              (filename: "rlpx.nim", line: 966, column: 8).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (getReceiptsThunk_8942263799, :env)
+    (getReceiptsThunk_7079990758, :env)
   futureContinue(resultFuture)
   return resultFuture
 
@@ -2323,7 +2071,7 @@ registerMsg(eth66Protocol, 15, "getReceipts", getReceiptsThunk, messagePrinter,
             requestResolver, nextMsgResolver)
 proc eth66PeerConnected(peer: Peer): Future[void] {.gcsafe, stackTrace: false,
     gcsafe, raises: [].} =
-  iterator eth66PeerConnected_8942273579(chronosInternalRetFuture: FutureBase;
+  iterator eth66PeerConnected_7079995961(chronosInternalRetFuture: FutureBase;
       :envP): FutureBase {.closure, gcsafe, raises: [Exception], gcsafe.} =
     template result(): auto {.used.} =
       {.fatal: "You should not reference the `result` variable inside" &
@@ -2347,190 +2095,145 @@ proc eth66PeerConnected(peer: Peer): Future[void] {.gcsafe, stackTrace: false,
       bind logIMPL, bindSym, brForceOpen
       try:
         block chroniclesLogStmt:
-          if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-            break chroniclesLogStmt
-          var record_8942273614:
+          var record_7079995996:
             defaultChroniclesStreamLogRecord
           mixin activateOutput
-          record_8942273614 = default(typeof(record_8942273614))
-          if {.gcsafe.}:
-            addr defaultChroniclesStreamOutputs
-          [][0].outFile ==
-              nil:
-            openOutput( {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0])
-          initLogRecord(record_8942273614, LogLevel(3), "eth66",
+          record_7079995996 = default(typeof(record_7079995996))
+          discard
+          initLogRecord(record_7079995996, LogLevel(INFO), "eth66",
                         ">> [eth/66] Sending Status (0x00)")
-          setProperty(record_8942273614, "tid", getLogThreadId())
-          setProperty(record_8942273614, "file", "eth66.nim:91")
+          setProperty(record_7079995996, "tid", getLogThreadId())
           mixin setProperty, formatItIMPL
-          setProperty(record_8942273614, "peer", $peer.remote)
+          setProperty(record_7079995996, "peer", $peer.remote)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942273614, "td", status.totalDifficulty)
+          setProperty(record_7079995996, "td", status.totalDifficulty)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942273614, "bestHash", short(status.bestBlockHash))
+          setProperty(record_7079995996, "bestHash", short(status.bestBlockHash))
           mixin setProperty, formatItIMPL
-          setProperty(record_8942273614, "networkId", network.networkId)
+          setProperty(record_7079995996, "networkId", network.networkId)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942273614, "genesis", short(status.genesisHash))
+          setProperty(record_7079995996, "genesis", short(status.genesisHash))
           mixin setProperty, formatItIMPL
-          setProperty(record_8942273614, "forkHash",
+          setProperty(record_7079995996, "forkHash",
                       toHex(status.forkId.forkHash))
           mixin setProperty, formatItIMPL
-          setProperty(record_8942273614, "forkNext", status.forkId.forkNext)
+          setProperty(record_7079995996, "forkNext", status.forkId.forkNext)
           logAllDynamicProperties(
-            defaultChroniclesStream, record_8942273614)
-          flushRecord(record_8942273614)
-      except CatchableError as err`gensym2678:
+            defaultChroniclesStream, record_7079995996)
+          flushRecord(record_7079995996)
+      except CatchableError as err`gensym1717:
         logLoggingFailure(cstring(">> [eth/66] Sending Status (0x00)"),
-                          err`gensym2678)
+                          err`gensym1717)
       let m =
-        chronosInternalRetFuture.internalChild =
-          let peer_8942256216 = peer
-          let sendingFuture`gensym61`gensym2700 = statusRawSender(peer, 66,
+        chronosInternalRetFuture.child =
+          let peer_7079985209 = peer
+          let sendingFuture`gensym61`gensym1736 = statusRawSender(peer, 66,
               network.networkId, status.totalDifficulty, status.bestBlockHash,
               status.genesisHash, status.forkId, milliseconds(10000'i64))
-          handshakeImpl(peer_8942256216, sendingFuture`gensym61`gensym2700,
-                        nextMsg(peer_8942256216, statusObj), seconds(10))
-        yield chronosInternalRetFuture.internalChild
-        if chronosInternalRetFuture.internalMustCancel:
+          handshakeImpl(peer_7079985209, sendingFuture`gensym61`gensym1736,
+                        nextMsg(peer_7079985209, statusObj), seconds(10))
+        yield chronosInternalRetFuture.child
+        if chronosInternalRetFuture.mustCancel:
           raise (ref CancelledError)(msg: "Future operation cancelled!")
-        internalCheckComplete(chronosInternalRetFuture.internalChild)
+        internalCheckComplete(chronosInternalRetFuture.child)
         internalRead(cast[type do:
-          let peer_8942256216 = peer
-          let sendingFuture`gensym61`gensym2700 = statusRawSender(peer, 66,
+          let peer_7079985209 = peer
+          let sendingFuture`gensym61`gensym1736 = statusRawSender(peer, 66,
               network.networkId, status.totalDifficulty, status.bestBlockHash,
               status.genesisHash, status.forkId, milliseconds(10000'i64))
-          handshakeImpl(peer_8942256216, sendingFuture`gensym61`gensym2700,
-                        nextMsg(peer_8942256216, statusObj), seconds(10))](chronosInternalRetFuture.internalChild))
+          handshakeImpl(peer_7079985209, sendingFuture`gensym61`gensym1736,
+                        nextMsg(peer_7079985209, statusObj), seconds(10))](chronosInternalRetFuture.child))
       bind logIMPL, bindSym, brForceOpen
       try:
         block chroniclesLogStmt:
-          if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-            break chroniclesLogStmt
-          var record_8942274241:
+          var record_7079996466:
             defaultChroniclesStreamLogRecord
           mixin activateOutput
-          record_8942274241 = default(typeof(record_8942274241))
-          if {.gcsafe.}:
-            addr defaultChroniclesStreamOutputs
-          [][0].outFile ==
-              nil:
-            openOutput( {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0])
-          initLogRecord(record_8942274241, LogLevel(3), "eth66",
+          record_7079996466 = default(typeof(record_7079996466))
+          discard
+          initLogRecord(record_7079996466, LogLevel(INFO), "eth66",
                         "Handshake: Local and remote networkId")
-          setProperty(record_8942274241, "tid", getLogThreadId())
-          setProperty(record_8942274241, "file", "eth66.nim:108")
+          setProperty(record_7079996466, "tid", getLogThreadId())
           mixin setProperty, formatItIMPL
-          setProperty(record_8942274241, "local", network.networkId)
+          setProperty(record_7079996466, "local", network.networkId)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942274241, "remote", m.networkId)
+          setProperty(record_7079996466, "remote", m.networkId)
           logAllDynamicProperties(
-            defaultChroniclesStream, record_8942274241)
-          flushRecord(record_8942274241)
-      except CatchableError as err`gensym2789:
+            defaultChroniclesStream, record_7079996466)
+          flushRecord(record_7079996466)
+      except CatchableError as err`gensym1787:
         logLoggingFailure(cstring("Handshake: Local and remote networkId"),
-                          err`gensym2789)
+                          err`gensym1787)
       bind logIMPL, bindSym, brForceOpen
       try:
         block chroniclesLogStmt:
-          if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-            break chroniclesLogStmt
-          var record_8942274336:
+          var record_7079996545:
             defaultChroniclesStreamLogRecord
           mixin activateOutput
-          record_8942274336 = default(typeof(record_8942274336))
-          if {.gcsafe.}:
-            addr defaultChroniclesStreamOutputs
-          [][0].outFile ==
-              nil:
-            openOutput( {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0])
-          initLogRecord(record_8942274336, LogLevel(3), "eth66",
+          record_7079996545 = default(typeof(record_7079996545))
+          discard
+          initLogRecord(record_7079996545, LogLevel(INFO), "eth66",
                         "Handshake: Local and remote genesisHash")
-          setProperty(record_8942274336, "tid", getLogThreadId())
-          setProperty(record_8942274336, "file", "eth66.nim:110")
+          setProperty(record_7079996545, "tid", getLogThreadId())
           mixin setProperty, formatItIMPL
-          setProperty(record_8942274336, "local", status.genesisHash)
+          setProperty(record_7079996545, "local", status.genesisHash)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942274336, "remote", m.genesisHash)
+          setProperty(record_7079996545, "remote", m.genesisHash)
           logAllDynamicProperties(
-            defaultChroniclesStream, record_8942274336)
-          flushRecord(record_8942274336)
-      except CatchableError as err`gensym2809:
+            defaultChroniclesStream, record_7079996545)
+          flushRecord(record_7079996545)
+      except CatchableError as err`gensym1803:
         logLoggingFailure(cstring("Handshake: Local and remote genesisHash"),
-                          err`gensym2809)
+                          err`gensym1803)
       bind logIMPL, bindSym, brForceOpen
       try:
         block chroniclesLogStmt:
-          if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-            break chroniclesLogStmt
-          var record_8942274431:
+          var record_7079996624:
             defaultChroniclesStreamLogRecord
           mixin activateOutput
-          record_8942274431 = default(typeof(record_8942274431))
-          if {.gcsafe.}:
-            addr defaultChroniclesStreamOutputs
-          [][0].outFile ==
-              nil:
-            openOutput( {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0])
-          initLogRecord(record_8942274431, LogLevel(3), "eth66",
+          record_7079996624 = default(typeof(record_7079996624))
+          discard
+          initLogRecord(record_7079996624, LogLevel(INFO), "eth66",
                         "Handshake: Local and remote forkId")
-          setProperty(record_8942274431, "tid", getLogThreadId())
-          setProperty(record_8942274431, "file", "eth66.nim:112")
+          setProperty(record_7079996624, "tid", getLogThreadId())
           mixin setProperty, formatItIMPL
-          setProperty(record_8942274431, "local", toHex(status.forkId.forkHash) &
+          setProperty(record_7079996624, "local", toHex(status.forkId.forkHash) &
               "/" &
               $status.forkId.forkNext)
           mixin setProperty, formatItIMPL
-          setProperty(record_8942274431, "remote",
+          setProperty(record_7079996624, "remote",
                       toHex(m.forkId.forkHash) & "/" & $m.forkId.forkNext)
           logAllDynamicProperties(
-            defaultChroniclesStream, record_8942274431)
-          flushRecord(record_8942274431)
-      except CatchableError as err`gensym2829:
+            defaultChroniclesStream, record_7079996624)
+          flushRecord(record_7079996624)
+      except CatchableError as err`gensym1819:
         logLoggingFailure(cstring("Handshake: Local and remote forkId"),
-                          err`gensym2829)
+                          err`gensym1819)
       if (
         not (m.networkId == network.networkId)):
         bind logIMPL, bindSym, brForceOpen
         try:
           block chroniclesLogStmt:
-            if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-              break chroniclesLogStmt
-            var record_8942274702:
+            var record_7079996813:
               defaultChroniclesStreamLogRecord
             mixin activateOutput
-            record_8942274702 = default(typeof(record_8942274702))
-            if {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0].outFile ==
-                nil:
-              openOutput( {.gcsafe.}:
-                addr defaultChroniclesStreamOutputs
-              [][0])
-            initLogRecord(record_8942274702, LogLevel(3), "eth66",
+            record_7079996813 = default(typeof(record_7079996813))
+            discard
+            initLogRecord(record_7079996813, LogLevel(INFO), "eth66",
                           "Peer for a different network (networkId)")
-            setProperty(record_8942274702, "tid", getLogThreadId())
-            setProperty(record_8942274702, "file", "eth66.nim:117")
+            setProperty(record_7079996813, "tid", getLogThreadId())
             mixin setProperty, formatItIMPL
-            setProperty(record_8942274702, "peer", $peer.remote)
+            setProperty(record_7079996813, "peer", $peer.remote)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942274702, "expectNetworkId", network.networkId)
+            setProperty(record_7079996813, "expectNetworkId", network.networkId)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942274702, "gotNetworkId", m.networkId)
+            setProperty(record_7079996813, "gotNetworkId", m.networkId)
             logAllDynamicProperties(
-              defaultChroniclesStream, record_8942274702)
-            flushRecord(record_8942274702)
-        except CatchableError as err`gensym2850:
+              defaultChroniclesStream, record_7079996813)
+            flushRecord(record_7079996813)
+        except CatchableError as err`gensym1836:
           logLoggingFailure(cstring("Peer for a different network (networkId)"),
-                            err`gensym2850)
+                            err`gensym1836)
         raise
           (ref UselessPeerError)(msg: "Eth handshake for different network",
                                  parent: nil)
@@ -2539,66 +2242,48 @@ proc eth66PeerConnected(peer: Peer): Future[void] {.gcsafe, stackTrace: false,
         bind logIMPL, bindSym, brForceOpen
         try:
           block chroniclesLogStmt:
-            if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-              break chroniclesLogStmt
-            var record_8942274906:
+            var record_7079996970:
               defaultChroniclesStreamLogRecord
             mixin activateOutput
-            record_8942274906 = default(typeof(record_8942274906))
-            if {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0].outFile ==
-                nil:
-              openOutput( {.gcsafe.}:
-                addr defaultChroniclesStreamOutputs
-              [][0])
-            initLogRecord(record_8942274906, LogLevel(3), "eth66",
+            record_7079996970 = default(typeof(record_7079996970))
+            discard
+            initLogRecord(record_7079996970, LogLevel(INFO), "eth66",
                           "Peer for a different network (genesisHash)")
-            setProperty(record_8942274906, "tid", getLogThreadId())
-            setProperty(record_8942274906, "file", "eth66.nim:123")
+            setProperty(record_7079996970, "tid", getLogThreadId())
             mixin setProperty, formatItIMPL
-            setProperty(record_8942274906, "peer", $peer.remote)
+            setProperty(record_7079996970, "peer", $peer.remote)
             mixin setProperty, formatItIMPL
-            setProperty(record_8942274906, "expectGenesis",
+            setProperty(record_7079996970, "expectGenesis",
                         short(status.genesisHash))
             mixin setProperty, formatItIMPL
-            setProperty(record_8942274906, "gotGenesis", short(m.genesisHash))
+            setProperty(record_7079996970, "gotGenesis", short(m.genesisHash))
             logAllDynamicProperties(
-              defaultChroniclesStream, record_8942274906)
-            flushRecord(record_8942274906)
-        except CatchableError as err`gensym2874:
+              defaultChroniclesStream, record_7079996970)
+            flushRecord(record_7079996970)
+        except CatchableError as err`gensym1856:
           logLoggingFailure(cstring("Peer for a different network (genesisHash)"),
-                            err`gensym2874)
+                            err`gensym1856)
         raise
           (ref UselessPeerError)(msg: "Eth handshake for different network",
                                  parent: nil)
       bind logIMPL, bindSym, brForceOpen
       try:
         block chroniclesLogStmt:
-          if not topicsMatch(LogLevel(3), [topicStateIMPL("eth66")]):
-            break chroniclesLogStmt
-          var record_8942275011:
+          var record_7079997059:
             defaultChroniclesStreamLogRecord
           mixin activateOutput
-          record_8942275011 = default(typeof(record_8942275011))
-          if {.gcsafe.}:
-            addr defaultChroniclesStreamOutputs
-          [][0].outFile ==
-              nil:
-            openOutput( {.gcsafe.}:
-              addr defaultChroniclesStreamOutputs
-            [][0])
-          initLogRecord(record_8942275011, LogLevel(3), "eth66",
+          record_7079997059 = default(typeof(record_7079997059))
+          discard
+          initLogRecord(record_7079997059, LogLevel(INFO), "eth66",
                         "Peer matches our network")
-          setProperty(record_8942275011, "tid", getLogThreadId())
-          setProperty(record_8942275011, "file", "eth66.nim:128")
+          setProperty(record_7079997059, "tid", getLogThreadId())
           mixin setProperty, formatItIMPL
-          setProperty(record_8942275011, "peer", $peer.remote)
+          setProperty(record_7079997059, "peer", $peer.remote)
           logAllDynamicProperties(
-            defaultChroniclesStream, record_8942275011)
-          flushRecord(record_8942275011)
-      except CatchableError as err`gensym2897:
-        logLoggingFailure(cstring("Peer matches our network"), err`gensym2897)
+            defaultChroniclesStream, record_7079997059)
+          flushRecord(record_7079997059)
+      except CatchableError as err`gensym1875:
+        logLoggingFailure(cstring("Peer matches our network"), err`gensym1875)
       cast[ref[EthPeerState:ObjectType]](getState(peer, eth66Protocol)).initialized = true
       cast[ref[EthPeerState:ObjectType]](getState(peer, eth66Protocol)).bestDifficulty = m.totalDifficulty
       cast[ref[EthPeerState:ObjectType]](getState(peer, eth66Protocol)).bestBlockHash = m.bestHash
@@ -2610,11 +2295,11 @@ proc eth66PeerConnected(peer: Peer): Future[void] {.gcsafe, stackTrace: false,
     newFutureImpl(srcLocImpl("eth66PeerConnected", (filename: "eth66.nim",
         line: 86, column: 4).filename,
                              (filename: "eth66.nim", line: 86, column: 4).line))
-  resultFuture.internalClosure =
+  resultFuture.closure =
     var :env
-    internalNew(:env)
+    :env = [type node]()
     :env.`:up` = :env
-    (eth66PeerConnected_8942273579, :env)
+    (eth66PeerConnected_7079995961, :env)
   futureContinue(resultFuture)
   return resultFuture
 

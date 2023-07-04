@@ -1,93 +1,4 @@
-# Nimbus
-# Copyright (c) 2021 Status Research & Development GmbH
-# Licensed under either of
-#  * Apache License, version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
-#    http://www.apache.org/licenses/LICENSE-2.0)
-#  * MIT license ([LICENSE-MIT](LICENSE-MIT) or
-#    http://opensource.org/licenses/MIT)
-# at your option. This file may not be copied, modified, or distributed
-# except according to those terms.
 
-## Sync worker peers scheduler template
-## ====================================
-##
-## Virtual method/interface functions to be provided as `mixin`:
-##
-## *runSetup(ctx: CtxRef[S]): bool*
-##   Global set up. This function will be called before any worker peer is
-##   started. If that function returns `false`, no worker peers will be run.
-##
-##   Also, this function should decide whether the `runDaemon()` job will be
-##   started next by controlling the `ctx.daemon` flag (default is `false`.)
-##
-## *runRelease(ctx: CtxRef[S])*
-##   Global clean up, done with all the worker peers.
-##
-## *runDaemon(ctx: CtxRef[S]) {.async.}*
-##   Global background job that will be re-started as long as the variable
-##   `ctx.daemon` is set `true`. If that job was stopped due to re-setting
-##   `ctx.daemon` to `false`, it will be restarted next after it was reset
-##   as `true` not before there is some activity on the `runPool()`,
-##   `runSingle()`, or `runMulti()` functions.
-##
-##
-## *runStart(buddy: BuddyRef[S,W]): bool*
-##   Initialise a new worker peer.
-##
-## *runStop(buddy: BuddyRef[S,W])*
-##   Clean up this worker peer.
-##
-##
-## *runPool(buddy: BuddyRef[S,W], last: bool; laps: int): bool*
-##   Once started, the function `runPool()` is called for all worker peers in
-##   sequence as the body of an iteration as long as the function returns
-##   `false`. There will be no other worker peer functions activated
-##   simultaneously.
-##
-##   This procedure is started if the global flag `buddy.ctx.poolMode` is set
-##   `true` (default is `false`.) It will be automatically reset before the
-##   the loop starts. Re-setting it again results in repeating the loop. The
-##   argument `laps` (starting with `0`) indicated the currend lap of the
-##   repeated loops. To avoid continous looping, the number of `laps` is
-##   limited (see `execPoolModeMax`, below.)
-##
-##   The argument `last` is set `true` if the last entry of the current loop
-##   has been reached.
-##
-##   Note:
-##   + This function does *not* runs in `async` mode.
-##   + The flag `buddy.ctx.poolMode` has priority over the flag
-##     `buddy.ctrl.multiOk` which controls `runSingle()` and `runMulti()`.
-##
-##
-## *runSingle(buddy: BuddyRef[S,W]) {.async.}*
-##   This worker peer method is invoked if the peer-local flag
-##   `buddy.ctrl.multiOk` is set `false` which is the default mode. This flag
-##   is updated by the worker peer when deemed appropriate.
-##   + For all worker peerss, there can be only one `runSingle()` function
-##     active simultaneously.
-##   + There will be no `runMulti()` function active for the very same worker
-##     peer that runs the `runSingle()` function.
-##   + There will be no `runPool()` iterator active.
-##
-##   Note that this function runs in `async` mode.
-##
-##
-## *runMulti(buddy: BuddyRef[S,W]) {.async.}*
-##   This worker peer method is invoked if the `buddy.ctrl.multiOk` flag is
-##   set `true` which is typically done after finishing `runSingle()`. This
-##   instance can be simultaneously active for all worker peers.
-##
-##   Note that this function runs in `async` mode.
-##
-##
-## Additional import files needed when using this template:
-## * eth/[common, p2p]
-## * chronicles
-## * chronos
-## * stew/[interval_set, sorted_set],
-## * "."/[sync_desc, sync_sched, protocol]
-##
 {.push raises: [].}
 
 import
@@ -95,7 +6,8 @@ import
   chronos,
   eth/[keys, p2p, p2p/peer_pool],
   stew/keyed_queue,
-  "."/[handlers, sync_desc]
+  "."/[handlers, sync_desc],
+  ../protocols
 
 static:
   # type `EthWireRef` is needed in `initSync()`

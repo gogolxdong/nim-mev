@@ -393,11 +393,7 @@ proc fullPC3*(w: openArray[NodeTagRangeSet]): string =
         "99.999" & partition
 
 
-proc dump*(
-    ranges: openArray[NodeTagRangeSet];
-    moan: proc(overlap: UInt256; iv: NodeTagRange) {.gcsafe.};
-    printRangesMax = high(int);
-      ): string =
+proc dump*(ranges: openArray[NodeTagRangeSet]; moan: proc(overlap: UInt256; iv: NodeTagRange) {.gcsafe, raises:[].}; printRangesMax = high(int)): string =
   ## Dump/anlalyse range sets
   var
     cache: NodeTagRangeSet

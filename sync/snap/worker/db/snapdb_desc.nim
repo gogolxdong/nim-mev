@@ -34,7 +34,7 @@ type
     ## Global, re-usable descriptor
     keyMap: Table[RepairKey,uint]    ## For debugging only (will go away)
     db: TrieDatabaseRef              ## General database
-    rocky: RocksStoreRef             ## Set if rocksdb is available
+    # rocky: RocksStoreRef             ## Set if rocksdb is available
 
   SnapDbBaseRef* = ref object of RootRef
     ## Session descriptor
@@ -68,14 +68,14 @@ proc keyPp(a: RepairKey; pv: SnapDbRef): string =
 # Private helper
 # ------------------------------------------------------------------------------
 
-proc clearRockyCacheFile(rocky: RocksStoreRef): bool =
-  if not rocky.isNil:
-    # A cache file might hang about from a previous crash
-    try:
-      discard rocky.clearCacheFile(RockyBulkCache)
-      return true
-    except OSError as e:
-      error "Cannot clear rocksdb cache", exception=($e.name), msg=e.msg
+# proc clearRockyCacheFile(rocky: RocksStoreRef): bool =
+#   if not rocky.isNil:
+#     # A cache file might hang about from a previous crash
+#     try:
+#       discard rocky.clearCacheFile(RockyBulkCache)
+#       return true
+#     except OSError as e:
+#       error "Cannot clear rocksdb cache", exception=($e.name), msg=e.msg
 
 # ------------------------------------------------------------------------------
 # Public constructor
@@ -94,8 +94,8 @@ proc init*(
       ): T =
   ## Variant of `init()` allowing bulk import on rocksdb backend
   result = T(db: db.trieDB, rocky: db.rocksStoreRef)
-  if not result.rocky.clearRockyCacheFile():
-    result.rocky = nil
+  # if not result.rocky.clearRockyCacheFile():
+  #   result.rocky = nil
 
 proc init*(
     T: type HexaryTreeDbRef;
@@ -142,13 +142,13 @@ proc hexaDb*(ps: SnapDbBaseRef): HexaryTreeDbRef =
   ## Getter, low level access to underlying session DB
   ps.xDb
 
-proc rockDb*(ps: SnapDbBaseRef): RocksStoreRef =
-  ## Getter, low level access to underlying persistent rock DB interface
-  ps.base.rocky
+# proc rockDb*(ps: SnapDbBaseRef): RocksStoreRef =
+#   ## Getter, low level access to underlying persistent rock DB interface
+#   ps.base.rocky
 
-proc rockDb*(pv: SnapDbRef): RocksStoreRef =
-  ## Getter  variant
-  pv.rocky
+# proc rockDb*(pv: SnapDbRef): RocksStoreRef =
+#   ## Getter  variant
+#   pv.rocky
 
 proc kvDb*(ps: SnapDbBaseRef): TrieDatabaseRef =
   ## Getter, low level access to underlying persistent key-value DB
@@ -199,13 +199,13 @@ template toOpenArray*(k: ByteArray33): openArray[byte] =
 # Public functions
 # ------------------------------------------------------------------------------
 
-proc dbBackendRocksDb*(pv: SnapDbRef): bool =
-  ## Returns `true` if rocksdb features are available
-  not pv.rocky.isNil
+# proc dbBackendRocksDb*(pv: SnapDbRef): bool =
+#   ## Returns `true` if rocksdb features are available
+#   not pv.rocky.isNil
 
-proc dbBackendRocksDb*(ps: SnapDbBaseRef): bool =
-  ## Returns `true` if rocksdb features are available
-  not ps.base.rocky.isNil
+# proc dbBackendRocksDb*(ps: SnapDbBaseRef): bool =
+#   ## Returns `true` if rocksdb features are available
+#   not ps.base.rocky.isNil
 
 proc mergeProofs*(
     xDb: HexaryTreeDbRef;     ## Session database

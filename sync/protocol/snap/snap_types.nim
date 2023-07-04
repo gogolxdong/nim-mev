@@ -187,8 +187,7 @@ method getAccountRange*(
     origin: openArray[byte];
     limit: openArray[byte];
     replySizeMax: uint64;
-      ): (seq[SnapAccount], SnapProofNodes)
-      {.base, raises: [CatchableError].} =
+      ): (seq[SnapAccount], SnapProofNodes) {.base,gcsafe, raises: [CatchableError].} =
   notImplemented("getAccountRange")
 
 method getStorageRanges*(
@@ -198,16 +197,14 @@ method getStorageRanges*(
     origin: openArray[byte];
     limit: openArray[byte];
     replySizeMax: uint64;
-      ): (seq[seq[SnapStorage]], SnapProofNodes)
-      {.base, raises: [CatchableError].} =
+      ): (seq[seq[SnapStorage]], SnapProofNodes) {.base,gcsafe, raises: [CatchableError].} =
   notImplemented("getStorageRanges")
 
 method getByteCodes*(
     ctx: SnapWireBase;
     nodes: openArray[Hash256];
     replySizeMax: uint64;
-      ): seq[Blob]
-      {.base, raises: [CatchableError].} =
+      ): seq[Blob] {.base,gcsafe, raises: [CatchableError].} =
   notImplemented("getByteCodes")
 
 method getTrieNodes*(
@@ -215,8 +212,7 @@ method getTrieNodes*(
     root: Hash256;
     pathGroups: openArray[SnapTriePaths];
     replySizeMax: uint64;
-      ): seq[Blob]
-      {.base, raises: [CatchableError].} =
+      ): seq[Blob] {.base,gcsafe, raises: [CatchableError].} =
   notImplemented("getTrieNodes")
 
 # ------------------------------------------------------------------------------
