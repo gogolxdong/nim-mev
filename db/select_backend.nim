@@ -1,6 +1,7 @@
 import strutils, eth/db/kvstore
 import os
 import ./kvstore_lmdb
+import chronicles
 
 export kvstore
 
@@ -23,13 +24,16 @@ type
 
 proc get*(db: ChainDB, key: openArray[byte]): seq[byte] =
   var res: seq[byte]
-  proc onData(data: openArray[byte]) = res = @data
-  echo "select_backend get"
+  proc onData(data: openArray[byte]) = 
+    info "onData", data=data
+    res = @data
+
+  echo "select_backend get:", key
   if db.kv.get(key, onData).expect("working database"):
     return res
 
 proc put*(db: ChainDB, key, value: openArray[byte]) =
-  echo "select_backend put"
+  echo "select_backend put:"
   db.kv.put(key, value).expect("working database")
 
 proc contains*(db: ChainDB, key: openArray[byte]): bool =
@@ -41,6 +45,7 @@ proc del*(db: ChainDB, key: openArray[byte]): bool =
   db.kv.del(key).expect("working database")
 
 proc newChainDB*(path = getCurrentDir() / ".lmdb"): ChainDB =
+  echo "newChainDB"
   var lmdbStoreRef = LMDBStoreRef.init(path).get()
   ChainDB(kv: kvStore lmdbStoreRef)
 

@@ -49,7 +49,6 @@ template db*(db: ChainDBRef): TrieDatabaseRef =
 # ------------------------------------------------------------------------------
 
 proc exists*(db: ChainDBRef, hash: Hash256): bool =
-  echo "exists"
   db.db.contains(hash.data)
 
 proc getBlockHeader*(db: ChainDBRef; blockHash: Hash256, output: var BlockHeader): bool =
@@ -78,10 +77,16 @@ proc getHash(db: ChainDBRef, key: DbKey, output: var Hash256): bool {.inline.} =
 
 proc getCanonicalHead*(db: ChainDBRef): BlockHeader =
   var headHash: Hash256
-  if not db.getHash(canonicalHeadHashKey(), headHash) or
-      not db.getBlockHeader(headHash, result):
-    raise newException(CanonicalHeadNotFound,
-                      "No canonical head set for this chain")
+  var hashKey = canonicalHeadHashKey()
+  info "getCanonicalHead", hashKey=hashKey
+  var gotHash = db.getHash(hashKey, headHash)
+  info "getCanonicalHead", headHash=headHash
+
+  var gotHeader = db.getBlockHeader(headHash, result)
+  info "getCanonicalHead", header=result
+
+  if not gotHash  or not gotHeader:
+    raise newException(CanonicalHeadNotFound, "No canonical head set for this chain")
 
 proc getCanonicalHeaderHash*(db: ChainDBRef): Hash256 =
   discard db.getHash(canonicalHeadHashKey(), result)

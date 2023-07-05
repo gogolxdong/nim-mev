@@ -136,7 +136,6 @@ proc new*(_: type CommonRef,
           networkId: NetworkId = MainNet,
           params = networkParams(BSC)): CommonRef
             {.gcsafe, raises: [CatchableError].} =
-
   new(result)
   result.init(db,pruneTrie,networkId,params.config,params.genesis)
 

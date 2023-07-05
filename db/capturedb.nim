@@ -25,7 +25,6 @@ proc put*(db: CaptureDB, key, value: openArray[byte]) =
     db.srcDb.put(key, value)
 
 proc contains*(db: CaptureDB, key: openArray[byte]): bool =
-  echo "capturedb contains"
   result = db.srcDb.contains(key)
   doAssert(db.dstDb.contains(key) == result)
 

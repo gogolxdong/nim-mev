@@ -10,7 +10,7 @@
 
 import
   std/[os, strutils],
-  kzg4844/kzg_ex as kzg,
+  # kzg4844/kzg_ex as kzg,
   stew/results,
   stint,
   ../constants,
@@ -38,9 +38,9 @@ const
 
 
 # kzgToVersionedHash implements kzg_to_versioned_hash from EIP-4844
-proc kzgToVersionedHash(kzg: kzg.KZGCommitment): VersionedHash =
-  result = keccakHash(kzg)
-  result.data[0] = BLOB_COMMITMENT_VERSION_KZG
+# proc kzgToVersionedHash(kzg: kzg.KZGCommitment): VersionedHash =
+#   result = keccakHash(kzg)
+#   result.data[0] = BLOB_COMMITMENT_VERSION_KZG
 
 # pointEvaluation implements point_evaluation_precompile from EIP-4844
 # return value and gas consumption is handled by pointEvaluation in
@@ -67,13 +67,13 @@ proc pointEvaluation*(input: openArray[byte]): Result[void, string] =
   kzgProof[0..<48]   = input[144..<192]
 
   # Verify KZG proof
-  let res = kzg.verifyKzgProof(commitment, z, y, kzgProof)
-  if res.isErr:
-    return err(res.error)
+  # let res = kzg.verifyKzgProof(commitment, z, y, kzgProof)
+  # if res.isErr:
+  #   return err(res.error)
 
-  # The actual verify result
-  if not res.get():
-    return err("Failed to verify KZG proof")
+  # # The actual verify result
+  # if not res.get():
+  #   return err("Failed to verify KZG proof")
 
   ok()
 
@@ -170,6 +170,7 @@ func validateEip4844Header*(
 
 proc validateBlobTransactionWrapper*(tx: Transaction):
                                      Result[void, string] {.raises: [].} =
+  echo "validateBlobTransactionWrapper"
   if not tx.networkPayload.isNil:
     return err("tx wrapper is none")
 
@@ -185,23 +186,23 @@ proc validateBlobTransactionWrapper*(tx: Transaction):
     return err("tx wrapper is ill formatted")
 
   # Verify that commitments match the blobs by checking the KZG proof
-  let res = kzg.verifyBlobKzgProofBatch(tx.networkPayload.blobs,
-              tx.networkPayload.commitments, tx.networkPayload.proofs)
-  if res.isErr:
-    return err(res.error)
+  # let res = kzg.verifyBlobKzgProofBatch(tx.networkPayload.blobs,
+  #             tx.networkPayload.commitments, tx.networkPayload.proofs)
+  # if res.isErr:
+  #   return err(res.error)
 
-  # Actual verification result
-  if not res.get():
-    return err("Failed to verify network payload of a transaction")
+  # # Actual verification result
+  # if not res.get():
+  #   return err("Failed to verify network payload of a transaction")
 
-  # Now that all commitments have been verified, check that versionedHashes matches the commitments
-  for i in 0 ..< tx.versionedHashes.len:
-    # this additional check also done in tx validation
-    if tx.versionedHashes[i].data[0] != BLOB_COMMITMENT_VERSION_KZG:
-      return err("wrong kzg version in versioned hash at index " & $i)
+  # # Now that all commitments have been verified, check that versionedHashes matches the commitments
+  # for i in 0 ..< tx.versionedHashes.len:
+  #   # this additional check also done in tx validation
+  #   if tx.versionedHashes[i].data[0] != BLOB_COMMITMENT_VERSION_KZG:
+  #     return err("wrong kzg version in versioned hash at index " & $i)
 
-    if tx.versionedHashes[i] != kzgToVersionedHash(tx.networkPayload.commitments[i]):
-      return err("tx versioned hash not match commitments at index " & $i)
+  #   if tx.versionedHashes[i] != kzgToVersionedHash(tx.networkPayload.commitments[i]):
+  #     return err("tx versioned hash not match commitments at index " & $i)
 
   ok()
 

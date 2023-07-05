@@ -44,7 +44,7 @@ type
     timeStamp: Time                  ## Time when added
     sender:    EthAddress            ## Sender account address
     info:      string                ## Whatever
-    status:    TxItemStatus          ## Transaction status (setter available)
+    status*:    TxItemStatus          ## Transaction status (setter available)
     reject*:    TxInfo                ## Reason for moving to waste basket
 
 # ------------------------------------------------------------------------------

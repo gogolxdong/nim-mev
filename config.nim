@@ -653,7 +653,7 @@ proc getWsFlags*(conf: NimbusConf): set[RpcFlag] =
 
 proc getBootNodes*(conf: NimbusConf): seq[ENode]
     {.gcsafe, raises: [CatchableError].} =
-  result.setBootnodes(BSCBootnodes)
+  result.setBootnodes(MainnetBootnodes)
   if conf.bootstrapNodes.len > 0:
     result.append(conf.bootstrapNodes)
 

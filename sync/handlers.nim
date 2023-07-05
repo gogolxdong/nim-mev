@@ -10,11 +10,10 @@
 
 import
   ./handlers/eth as handlers_eth,
-  ./handlers/setup as handlers_setup,
-  ./handlers/snap as handlers_snap
+  ./handlers/setup as handlers_setup
 
 export
-  handlers_eth, handlers_setup, handlers_snap
+  handlers_eth, handlers_setup
 
 static:
   type
