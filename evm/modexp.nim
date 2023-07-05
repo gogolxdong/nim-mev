@@ -1,10 +1,9 @@
-import
-  std/strutils
+import std/strutils
 
 from os import DirSep, AltSep
 
 const
-  vendorPath  = currentSourcePath
+  vendorPath  = currentSourcePath.rsplit("/")[0]
   srcPath = vendorPath & "/libtommath"
 
 {.passc: "-DMP_32BIT"}

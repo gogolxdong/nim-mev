@@ -39,15 +39,13 @@ type
     txItemPacked
 
   TxItemRef* = ref object of RootObj ##\
-    ## Data container with transaction and meta data. Entries are *read-only*\
-    ## by default, for some there is a setter available.
     tx:        Transaction           ## Transaction data
     itemID:    Hash256               ## Transaction hash
     timeStamp: Time                  ## Time when added
     sender:    EthAddress            ## Sender account address
     info:      string                ## Whatever
     status:    TxItemStatus          ## Transaction status (setter available)
-    reject:    TxInfo                ## Reason for moving to waste basket
+    reject*:    TxInfo                ## Reason for moving to waste basket
 
 # ------------------------------------------------------------------------------
 # Private, helpers for debugging and pretty printing

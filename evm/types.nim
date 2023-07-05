@@ -4,6 +4,8 @@ import
   json_rpc/rpcclient,
   "."/[stack, memory, code_stream],
   ./interpreter/[gas_costs, op_codes],
+  ./async/data_sources,
+  ../db/accounts_cache,
   ../common/[common, evmforks]
 
 {.push raises: [].}
@@ -12,9 +14,6 @@ when defined(evmc_enabled):
   import
     ./evmc_api
 
-# Select between small-stack recursion and no recursion.  Both are good, fast,
-# low resource using methods.  Keep both here because true EVMC API requires
-# the small-stack method, but Chronos `async` is better without recursion.
 const vm_use_recursion* = defined(evmc_enabled)
 
 type
@@ -36,12 +35,15 @@ type
     flags*         : set[VMFlag]
     tracer*        : TransactionTracer
     receipts*      : seq[Receipt]
+    stateDB*       : AccountsCache
     cumulativeGasUsed*: GasInt
     txOrigin*      : EthAddress
     txGasPrice*    : GasInt
+    txVersionedHashes*: VersionedHashes
     gasCosts*      : GasCosts
     fork*          : EVMFork
     minerAddress*  : EthAddress
+    asyncFactory*  : AsyncOperationFactory
 
   TracerFlags* {.pure.} = enum
     EnableTracing
@@ -73,7 +75,7 @@ type
     output*:                seq[byte]
     returnData*:            seq[byte]
     error*:                 Error
-    # savePoint*:             SavePoint
+    savePoint*:             SavePoint
     instr*:                 Op
     opIndex*:               int
     when defined(evmc_enabled):

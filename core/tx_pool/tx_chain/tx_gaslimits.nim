@@ -16,6 +16,7 @@ import
   std/[math],
   ../../../common/common,
   ../../../constants,
+  ../../pow/header,
   eth/[eip1559]
 
 {.push raises: [].}
@@ -107,18 +108,12 @@ proc gasLimitsGet*(com: CommonRef; parent: BlockHeader; parentLimit: GasInt;
     result.trgLimit, (result.maxLimit * pc.hwmMax + 50) div 100)
 
   # override trgLimit, see https://github.com/status-im/nimbus-eth1/issues/1032
-  if com.isLondon(parent.blockNumber+1):
-    var parentGasLimit = parent.gasLimit
-    if not com.isLondon(parent.blockNumber):
-      # Bump by 2x
-      parentGasLimit = parent.gasLimit * EIP1559_ELASTICITY_MULTIPLIER
-    result.trgLimit = calcGasLimit1559(parentGasLimit, desiredLimit = pc.gasCeil)
-  else:
-    result.trgLimit = computeGasLimit(
-      parent.gasUsed,
-      parent.gasLimit,
-      gasFloor = pc.gasFloor,
-      gasCeil = pc.gasCeil)
+
+  result.trgLimit = computeGasLimit(
+    parent.gasUsed,
+    parent.gasLimit,
+    gasFloor = pc.gasFloor,
+    gasCeil = pc.gasCeil)
 
 proc gasLimitsGet*(com: CommonRef; parent: BlockHeader;
                    pc: TxChainGasLimitsPc): TxChainGasLimits =

@@ -12,7 +12,7 @@ import
   std/[json, strutils, sets, hashes],
   chronicles, eth/common, stint,
   nimcrypto/utils,
-  ./types, ./memory, ./stack, 
+  ./types, ./memory, ./stack, ../db/accounts_cache,
   ./interpreter/op_codes
 
 logScope:
@@ -135,12 +135,51 @@ proc traceOpCodeStarted*(tracer: var TransactionTracer, c: Computation, op: Op):
 
   result = tracer.trace["structLogs"].len - 1
 
+proc traceOpCodeEnded*(tracer: var TransactionTracer, c: Computation, op: Op, lastIndex: int) =
+  let j = tracer.trace["structLogs"].elems[lastIndex]
+
+  # TODO: figure out how to get storage
+  # when contract execution interrupted by exception
+  if TracerFlags.DisableStorage notin tracer.flags:
+    var storage = newJObject()
+    if c.msg.depth < tracer.storageKeys.len:
+      var stateDB = c.vmState.stateDB
+      for key in tracer.storage(c.msg.depth):
+        let value = stateDB.getStorage(c.msg.contractAddress, key)
+        if TracerFlags.GethCompatibility in tracer.flags:
+          storage["0x" & key.dumpHex.stripLeadingZeros] =
+            %("0x" & value.dumpHex.stripLeadingZeros)
+        else:
+          storage[key.dumpHex] = %(value.dumpHex)
+      j["storage"] = storage
+
+  if TracerFlags.GethCompatibility in tracer.flags:
+    let gas = fromHex[GasInt](j["gas"].getStr)
+    j["gasCost"] = encodeHexInt(gas - c.gasMeter.gasRemaining)
+  else:
+    let gas = j["gas"].getBiggestInt()
+    j["gasCost"] = %(gas - c.gasMeter.gasRemaining)
+
+  if op in {Return, Revert} and TracerFlags.DisableReturnData notin tracer.flags:
+    let returnValue = %("0x" & toHex(c.output, true))
+    if TracerFlags.GethCompatibility in tracer.flags:
+      j["returnData"] = returnValue
+      tracer.trace["returnData"] = returnValue
+    else:
+      j["returnValue"] = returnValue
+      tracer.trace["returnValue"] = returnValue
+
+  trace "Op", json = j.pretty()
+
 proc traceError*(tracer: var TransactionTracer, c: Computation) =
   if tracer.trace["structLogs"].elems.len > 0:
     let j = tracer.trace["structLogs"].elems[^1]
     j["error"] = %(c.error.info)
     trace "Error", json = j.pretty()
 
+    # even though the gasCost is incorrect,
+    # we have something to display,
+    # it is an error anyway
     if TracerFlags.GethCompatibility in tracer.flags:
       let gas = fromHex[GasInt](j["gas"].getStr)
       j["gasCost"] = encodeHexInt(gas - c.gasMeter.gasRemaining)

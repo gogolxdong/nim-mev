@@ -1,4 +1,3 @@
-
 {.push raises: [].}
 
 import
@@ -37,9 +36,6 @@ const
   maxReceiptsFetch* = 256
   maxHeadersFetch* = 192
 
-proc notImplemented(name: string) =
-  info "Method not implemented", meth = name
-
 method getStatus*(ctx: EthWireBase): EthState
     {.base, gcsafe, raises: [CatchableError].} =
     EthState(totalDifficulty:1.u256, genesisHash: Hash256.fromHex("0x0d21840abff46b96c84b2ac9e10e4f5cdaeb5693cb665db62a2f3b02d2d57b5b"), forkId: ChainForkId(forkHash:[byte(41),149,197,42], forkNext: 0.u256))
@@ -66,6 +62,7 @@ method getBlockHeaders*(ctx: EthWireBase, req: BlocksRequest): seq[BlockHeader] 
 method handleNewBlock*(ctx: EthWireBase, peer: Peer, blk: EthBlock, totalDifficulty: DifficultyInt) {.base, gcsafe, raises: [CatchableError].} =
   {.gcsafe.}:
     info "handleNewBlock", peer=peer, blk=blk, totalDifficulty=totalDifficulty
+    
 
 method handleAnnouncedTxs*(ctx: EthWireBase, peer: Peer, txs: openArray[Transaction]) {.base, gcsafe, raises: [CatchableError].} =
   {.gcsafe.}:

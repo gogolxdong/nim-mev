@@ -12,7 +12,7 @@ import
   std/[tables, hashes, sets],
   eth/[common, rlp], eth/trie/[hexary, db, trie_defs],
   ../constants, ../utils/utils, storage_types,
-  ../../stateless/multi_keys,
+  ../stateless/multi_keys,
   ./distinct_tries,
   ./access_list as ac_access_list,
   ./transient_storage

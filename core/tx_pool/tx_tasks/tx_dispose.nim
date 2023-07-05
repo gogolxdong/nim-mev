@@ -50,7 +50,7 @@ proc deleteOtherNonces(xp: TxPoolRef; item: TxItemRef; newerThan: Time): bool
       # only delete non-expired items
       if newerThan < other.timeStamp:
         discard xp.txDB.dispose(other, txInfoErrTxExpiredImplied)
-        impliedEvictionMeter.inc
+        # impliedEvictionMeter.inc
         result = true
 
 # ------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ proc disposeExpiredItems*(xp: TxPoolRef) {.gcsafe,raises: [KeyError].} =
 
     # Note: it is ok to delete the current item
     discard xp.txDB.dispose(item, txInfoErrTxExpired)
-    evictionMeter.inc
+    # evictionMeter.inc
 
     # Also delete all non-expired items with higher nonces.
     if xp.deleteOtherNonces(item, deadLine):

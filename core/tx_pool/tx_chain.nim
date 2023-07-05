@@ -24,7 +24,8 @@ import
   ../executor,
   ../casper,
   ./tx_chain/[tx_basefee, tx_gaslimits],
-  ./tx_item
+  ./tx_item,
+  ../pow/difficulty
 
 export
   TxChainGasLimits,
