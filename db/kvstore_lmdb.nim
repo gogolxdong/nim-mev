@@ -5,13 +5,20 @@ import chronicles
 
 type
   LMDBStoreRef* = ref object of RootObj
-    store*: LMDBTxn
-    dbi*: Dbi
+    store*: LMDBEnv
+
 
 proc get*(db: LMDBStoreRef, key: openArray[byte], onData: kvstore.DataProc): KvResult[bool] =
-    var data = db.store.get(db.dbi, $key)
-    info "lmdb", data=data
-    onData(data.toOpenArrayByte(0, data.len - 1))
+    let txn = db.store.newTxn()
+    let dbi = txn.dbiOpen("", 0)
+    var keyVal = Val(mvSize: key.len.uint, mvData: key[0].addr)
+    var dataVal:Val
+    var ret = txn.get(dbi, keyVal.addr, dataVal.addr)
+    if ret == 0:
+        var data = cast[ptr UncheckedArray[byte]](dataVal.mvData)
+        info "lmdb", dataLen=dataVal.mvSize, data = data.toOpenArray(0, dataVal.mvSize.int - 1)
+        
+        onData(data.toOpenArray(0, dataVal.mvSize.int - 1))
     ok(true)
 
 proc find*(db: LMDBStoreRef, prefix: openArray[byte], onFind: kvstore.KeyValueProc): KvResult[void] =
@@ -19,35 +26,45 @@ proc find*(db: LMDBStoreRef, prefix: openArray[byte], onFind: kvstore.KeyValuePr
 
 proc put*(db: LMDBStoreRef, key, value: openArray[byte]): KvResult[void] =
     echo "key:", key, " value:", value
-    db.store.put(db.dbi, $key, $value)
-    db.store.commit()
+    var keyVal = Val(mvSize: key.len.uint, mvData: key[0].addr)
+    var valueVal = Val(mvSize: value.len.uint, mvData: value[0].addr)
+    let txn = db.store.newTxn()
+    let dbi = txn.dbiOpen("", 0)
+    var ret = txn.put(dbi, addr keyVal, addr valueVal, 0.cuint)
+    if ret == 0:
+        txn.commit()
     ok()
 
 proc del*(db: LMDBStoreRef, key: openArray[byte]): KvResult[bool] =
-    var data = db.store.get(db.dbi, $key)
-    db.store.del(db.dbi, $key, data)
-    db.store.commit()
+    let txn = db.store.newTxn()
+    let dbi = txn.dbiOpen("", 0)
+    var data = txn.get(dbi, $key)
+    txn.del(dbi, $key, data)
+    txn.commit()
     ok(true)
 
 proc contains*(db: LMDBStoreRef, key: openArray[byte]): KvResult[bool] =
     echo "contains:", key
-    var data = db.store.get(db.dbi, $key)
+    let txn = db.store.newTxn()
+    let dbi = txn.dbiOpen("", 0)
+    var data = txn.get(dbi, $key)
     if data.len > 0:
         ok(true)
     else:
         ok(false)
 
-
 proc clear*(db: LMDBStoreRef): KvResult[bool] =
-    db.store.emptyDb(db.dbi)
-    db.store.commit()
+    let txn = db.store.newTxn()
+    let dbi = txn.dbiOpen("", 0)
+    txn.emptyDb(dbi)
+    db.store.envClose()
     ok(true)
 
 proc close*(db: LMDBStoreRef) =
-    db.store.deleteAndCloseDb(db.dbi)
+    let txn = db.store.newTxn()
+    let dbi = txn.dbiOpen("", 0)
+    txn.deleteAndCloseDb(dbi)
 
 proc init*(T: type LMDBStoreRef, path:string): KvResult[T] =
     var store = newLMDBEnv(getCurrentDir() / ".lmdb")
-    let txn = store.newTxn()
-    let dbi = txn.dbiOpen("", 0)
-    ok(T(store: txn, dbi: dbi))
+    ok(T(store: store))

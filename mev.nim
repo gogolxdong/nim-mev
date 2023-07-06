@@ -8,6 +8,7 @@ import ./db/select_backend
 import ./evm/[evmc_api,types, state]
 import ./core/chain/chain_desc, ./core/tx_pool
 import ./sync/handlers/setup
+import ./sync/handlers
 import lmdb
 import sequtils
 
@@ -25,18 +26,26 @@ var node5 = ENode.fromString("enode://c641e6b3cb4754e3a0a2d85175f49df45febf9b164
 var pk = PrivateKey.fromHex("0x21e4a26d7699c1db44cfd6303c8f969c3ab6c9e31bdc13d3ad5bfda7a180c9a5").get
 
 proc setupTestNode*(rng: ref HmacDrbgContext, capabilities: varargs[ProtocolInfo, `protocolInfo`]): EthereumNode {.gcsafe.} =
-  var bootstrapNodes = BSCBootnodes.mapIt(ENode.fromString(it).get)
-  result = newEthereumNode(pk.toKeyPair, 
-    Address(udpPort: nextPort, tcpPort: nextPort, ip: parseIpAddress("0.0.0.0")), 
-    NetworkId(56), 
-    addAllCapabilities = false, 
-    bootstrapNodes=bootstrapNodes,
-    bindUdpPort = nextPort, 
-    bindTcpPort = nextPort,
-    rng = rng)
+  {.gcsafe.}:
+    var bootstrapNodes = BSCBootnodes.mapIt(ENode.fromString(it).get)
+    result = newEthereumNode(pk.toKeyPair, 
+      Address(udpPort: nextPort, tcpPort: nextPort, ip: parseIpAddress("0.0.0.0")), 
+      NetworkId(56), 
+      addAllCapabilities = false, 
+      bootstrapNodes=bootstrapNodes,
+      bindUdpPort = nextPort, 
+      bindTcpPort = nextPort,
+      rng = rng)
 
-  for capability in capabilities:
-    result.addCapability capability
+    var dbBackend = newChainDB()
+    let trieDB = trieDB dbBackend
+    let comm = CommonRef.new(trieDB, pruneTrie=true, BSC, networkParams(BSC))
+    comm.initializeEmptyDb()
+    var chain = comm.newChain()
+    var txPool = TxPoolRef.new(comm, pk.toPublicKey.toCanonicalAddress)   
+
+    for capability in capabilities:
+      result.addCapability capability, EthWireRef.new(chain, txPool, result.peerPool)
 
 var rng = newRng()
 var peer:Peer
@@ -44,24 +53,12 @@ var node = setupTestNode(rng, eth )
 proc startNode() =
   node.startListening()
 
-  var dbBackend = newChainDB()
-  let trieDB = trieDB dbBackend
-
-  let comm = CommonRef.new(trieDB, pruneTrie=true, BSC, networkParams(BSC))
-  var chain = comm.newChain()
-  # let header = chain.currentBlock()
-  var txPool = TxPoolRef.new(comm, pk.toPublicKey.toCanonicalAddress)   
-  # comm.initializeEmptyDb()
-  node.addEthHandlerCapability(node.peerPool, chain, txPool)
-
   var res = waitFor node.rlpxConnect(newNode node5)
   if res.isOk:
     peer = res.get
   else:
     echo res.error
     quit 1
-
-
 
   proc controlCHandler() {.noconv.} =
     info "\nCtrl+C pressed. Waiting for a graceful shutdown."

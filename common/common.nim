@@ -259,15 +259,17 @@ proc consensus*(com: CommonRef, header: BlockHeader): ConsensusType
 
   return com.config.consensusType
 
-proc initializeEmptyDb*(com: CommonRef)
-    {.gcsafe, raises: [CatchableError].} =
+proc initializeEmptyDb*(com: CommonRef) {.gcsafe, raises: [CatchableError].} =
   let trieDB = com.db.db
-  if canonicalHeadHashKey().toOpenArray notin trieDB:
-    info "Writing genesis to DB"
-    doAssert(com.genesisHeader.blockNumber.isZero,
-      "can't commit genesis block with number > 0")
-    discard com.db.persistHeaderToDb(com.genesisHeader, com.consensusType == ConsensusType.POS)
-    doAssert(canonicalHeadHashKey().toOpenArray in trieDB)
+  info "initializeEmptyDb"
+  var hashKey = canonicalHeadHashKey()
+  trieDB.put(hashKey.toOpenArray, com.genesisHeader.blockNumber.blockNumberToHashKey.toOpenArray)
+
+  # if hashKey.toOpenArray notin trieDB:
+  info "Writing genesis to DB"
+  doAssert(com.genesisHeader.blockNumber.isZero, "can't commit genesis block with number > 0")
+  discard com.db.persistHeaderToDb(com.genesisHeader, com.consensusType == ConsensusType.POS)
+  doAssert(canonicalHeadHashKey().toOpenArray in trieDB)
 
 proc syncReqNewHead*(com: CommonRef; header: BlockHeader)
     {.gcsafe, raises: [].} =

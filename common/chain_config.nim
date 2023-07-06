@@ -89,8 +89,7 @@ proc read(rlp: var Rlp, x: var AddressBalance, _: type GenesisAccount): GenesisA
     {.gcsafe, raises: [RlpError].} =
   GenesisAccount(balance: rlp.read(UInt256))
 
-func decodePrealloc*(data: seq[byte]): GenesisAlloc
-    {.gcsafe, raises: [RlpError].} =
+proc decodePrealloc*(data: seq[byte]): GenesisAlloc {.gcsafe, raises: [RlpError].} =
   for tup in rlp.decode(data, seq[AddressBalance]):
     result[tup.address] = tup.account
 

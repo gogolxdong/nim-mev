@@ -52,7 +52,9 @@ proc exists*(db: ChainDBRef, hash: Hash256): bool =
   db.db.contains(hash.data)
 
 proc getBlockHeader*(db: ChainDBRef; blockHash: Hash256, output: var BlockHeader): bool =
-  let data = db.db.get(genericHashKey(blockHash).toOpenArray)
+  var hashKey = genericHashKey(blockHash)
+  info "getBlockHeader", blockHash=blockHash, hashKey=hashKey
+  let data = db.db.get(hashKey.toOpenArray)
   if data.len != 0:
     try:
       output = rlp.decode(data, BlockHeader)
@@ -71,6 +73,7 @@ proc getBlockHeader*(db: ChainDBRef, blockHash: Hash256): BlockHeader =
 
 proc getHash(db: ChainDBRef, key: DbKey, output: var Hash256): bool {.inline.} =
   let data = db.db.get(key.toOpenArray)
+  info "getHash", key=key, data=data
   if data.len != 0:
     output = rlp.decode(data, Hash256)
     result = true
@@ -78,7 +81,8 @@ proc getHash(db: ChainDBRef, key: DbKey, output: var Hash256): bool {.inline.} =
 proc getCanonicalHead*(db: ChainDBRef): BlockHeader =
   var headHash: Hash256
   var hashKey = canonicalHeadHashKey()
-  info "getCanonicalHead", hashKey=hashKey
+  info "getCanonicalHead", hashKey=hashKey.toOpenArray
+  
   var gotHash = db.getHash(hashKey, headHash)
   info "getCanonicalHead", headHash=headHash
 
@@ -449,6 +453,7 @@ proc persistHeaderToDb*(
   if not isStartOfHistory and not db.headerExists(header.parentHash):
     raise newException(ParentNotFound, "Cannot persist block header " &
         $headerHash & " with unknown parent " & $header.parentHash)
+  info "persistHeaderToDb"
   db.db.put(genericHashKey(headerHash).toOpenArray, rlp.encode(header))
 
   let score = if isStartOfHistory: header.difficulty
@@ -459,7 +464,9 @@ proc persistHeaderToDb*(
 
   var headScore: UInt256
   try:
-    headScore = db.getScore(db.getCanonicalHead().hash)
+    var headHash = db.getCanonicalHead().hash
+    echo headHash
+    headScore = db.getScore(headHash)
   except CanonicalHeadNotFound:
     return db.setAsCanonicalChainHead(headerHash)
 
