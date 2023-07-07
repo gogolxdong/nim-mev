@@ -55,7 +55,7 @@ proc getBlockHeader*(db: ChainDBRef; blockHash: Hash256, output: var BlockHeader
   var hashKey = genericHashKey(blockHash)
   info "getBlockHeader", blockHash=blockHash, hashKey=hashKey
   let data = db.db.get(hashKey.toOpenArray)
-  info "getBlockHeader", data=data
+
   if data.len != 0:
     try:
       output = rlp.decode(data, BlockHeader)

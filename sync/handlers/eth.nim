@@ -250,41 +250,40 @@ proc sendTransactions(ctx: EthWireRef,
 proc fetchTransactions(ctx: EthWireRef, reqHashes: seq[Hash256], peer: Peer): Future[void] {.async.} =
   info "fetchTx: requesting txs", number = reqHashes.len
 
-  try:
+  # try:
 
-    let res = await peer.getPooledTransactions(reqHashes)
-    if res.isNone:
-      error "not able to get pooled transactions"
-      return
+  #   let res = await peer.getPooledTransactions(reqHashes)
+  #   if res.isNone:
+  #     error "not able to get pooled transactions"
+  #     return
 
-    let txs = res.get()
-    debug "fetchTx: received requested txs",
-      number = txs.transactions.len
+  #   let txs = res.get()
+  #   info "fetchTx: received requested txs", number = txs.transactions.len
 
-    # Remove from pending list regardless if tx is in result
-    for tx in txs.transactions:
-      let txHash = rlpHash(tx)
-      ctx.pending.excl txHash
+  #   # Remove from pending list regardless if tx is in result
+  #   for tx in txs.transactions:
+  #     let txHash = rlpHash(tx)
+  #     ctx.pending.excl txHash
 
-    ctx.txPool.add(txs.transactions)
+  #   ctx.txPool.add(txs.transactions)
 
-  except TransportError:
-    debug "Transport got closed during fetchTransactions"
-    return
-  except CatchableError as e:
-    debug "Exception in fetchTransactions", exc = e.name, err = e.msg
-    return
+  # except TransportError:
+  #   debug "Transport got closed during fetchTransactions"
+  #   return
+  # except CatchableError as e:
+  #   debug "Exception in fetchTransactions", exc = e.name, err = e.msg
+  #   return
 
-  var newTxHashes = newSeqOfCap[Hash256](reqHashes.len)
-  for txHash in reqHashes:
-    if ctx.inPoolAndOk(txHash):
-      newTxHashes.add txHash
+  # var newTxHashes = newSeqOfCap[Hash256](reqHashes.len)
+  # for txHash in reqHashes:
+  #   if ctx.inPoolAndOk(txHash):
+  #     newTxHashes.add txHash
 
-  let peers = ctx.getPeers(peer)
-  if peers.len == 0 or newTxHashes.len == 0:
-    return
+  # let peers = ctx.getPeers(peer)
+  # if peers.len == 0 or newTxHashes.len == 0:
+  #   return
 
-  await ctx.sendNewTxHashes(newTxHashes, peers)
+  # await ctx.sendNewTxHashes(newTxHashes, peers)
 
 # ------------------------------------------------------------------------------
 # Private functions: peer observer
@@ -446,7 +445,7 @@ method getBlockHeaders*(ctx: EthWireRef, req: BlocksRequest): seq[BlockHeader] {
       result.add foundBlock
 
 method handleAnnouncedTxs*(ctx: EthWireRef, peer: Peer, txs: openArray[Transaction]) {.gcsafe, raises: [CatchableError].} =
-  info "handleAnnouncedTxs", peer=peer, txs=txs.len, txHashes = txs.mapIt(it.rlpEncode)
+  info "handleAnnouncedTxs", peer=peer, txs=txs.len, txHashes = txs.mapIt(it.itemID())
   if ctx.enableTxPool != Enabled:
     when trMissingOrDisabledGossipOk:
       notEnabled("handleAnnouncedTxs")
