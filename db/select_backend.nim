@@ -25,7 +25,6 @@ type
 proc get*(db: ChainDB, key: openArray[byte]): seq[byte] =
   var res: seq[byte]
   proc onData(data: openArray[byte]) = 
-    info "onData", data=data
     res = @data
 
   echo "select_backend get:", key
@@ -33,7 +32,6 @@ proc get*(db: ChainDB, key: openArray[byte]): seq[byte] =
     return res
 
 proc put*(db: ChainDB, key, value: openArray[byte]) =
-  echo "select_backend put:"
   db.kv.put(key, value).expect("working database")
 
 proc contains*(db: ChainDB, key: openArray[byte]): bool =

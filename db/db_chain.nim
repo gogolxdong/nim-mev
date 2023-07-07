@@ -55,11 +55,13 @@ proc getBlockHeader*(db: ChainDBRef; blockHash: Hash256, output: var BlockHeader
   var hashKey = genericHashKey(blockHash)
   info "getBlockHeader", blockHash=blockHash, hashKey=hashKey
   let data = db.db.get(hashKey.toOpenArray)
+  info "getBlockHeader", data=data
   if data.len != 0:
     try:
       output = rlp.decode(data, BlockHeader)
       true
-    except RlpError:
+    except RlpError as e:
+      error "getBlockHeader", err=e.msg
       false
   else:
     false
@@ -136,6 +138,7 @@ proc getBlockHeader*(db: ChainDBRef; n: BlockNumber): BlockHeader =
   db.getBlockHeader(db.getBlockHash(n))
 
 proc getScore*(db: ChainDBRef; blockHash: Hash256): UInt256 =
+  info "getScore", blockHash=blockHash
   rlp.decode(db.db.get(blockHashToScoreKey(blockHash).toOpenArray), UInt256)
 
 proc setScore*(db: ChainDBRef; blockHash: Hash256, score: UInt256) =
@@ -188,6 +191,7 @@ iterator findNewAncestors(db: ChainDBRef; header: BlockHeader): BlockHeader =
       h = db.getBlockHeader(h.parentHash)
 
 proc addBlockNumberToHashLookup*(db: ChainDBRef; header: BlockHeader) =
+  info "addBlockNumberToHashLookup"
   db.db.put(blockNumberToHashKey(header.blockNumber).toOpenArray, rlp.encode(header.hash))
 
 proc persistTransactions*(db: ChainDBRef, blockNumber:
@@ -286,11 +290,11 @@ proc getBlockBody*(db: ChainDBRef, header: BlockHeader, output: var BlockBody): 
     else:
       result = false
 
-  if header.withdrawalsRoot.isSome:
-    var withdrawals: seq[Withdrawal]
-    for encodedWd in db.getWithdrawalsData(header.withdrawalsRoot.get):
-      withdrawals.add(rlp.decode(encodedWd, Withdrawal))
-    output.withdrawals = some(withdrawals)
+  # if header.withdrawalsRoot.isSome:
+  #   var withdrawals: seq[Withdrawal]
+  #   for encodedWd in db.getWithdrawalsData(header.withdrawalsRoot.get):
+  #     withdrawals.add(rlp.decode(encodedWd, Withdrawal))
+  #   output.withdrawals = some(withdrawals)
 
 proc getBlockBody*(db: ChainDBRef, blockHash: Hash256, output: var BlockBody): bool =
   var header: BlockHeader
@@ -442,30 +446,27 @@ proc getReceipts*(db: ChainDBRef; receiptRoot: Hash256): seq[Receipt] =
     receipts.add(r)
   return receipts
 
-proc persistHeaderToDb*(
-    db: ChainDBRef;
-    header: BlockHeader;
-    forceCanonical: bool;
-    startOfHistory = GENESIS_PARENT_HASH;
-      ): seq[BlockHeader] =
+proc persistHeaderToDb*(db: ChainDBRef;header: BlockHeader;forceCanonical: bool;startOfHistory = GENESIS_PARENT_HASH): seq[BlockHeader] =
   let isStartOfHistory = header.parentHash == startOfHistory
-  let headerHash = header.blockHash
+  # let headerHash = header.blockHash
+  let headerHash = Hash256.fromHex"0D21840ABFF46B96C84B2AC9E10E4F5CDAEB5693CB665DB62A2F3B02D2D57B5B"
   if not isStartOfHistory and not db.headerExists(header.parentHash):
-    raise newException(ParentNotFound, "Cannot persist block header " &
-        $headerHash & " with unknown parent " & $header.parentHash)
-  info "persistHeaderToDb"
-  db.db.put(genericHashKey(headerHash).toOpenArray, rlp.encode(header))
+    raise newException(ParentNotFound, "Cannot persist block header " & $headerHash & " with unknown parent " & $header.parentHash)
+  var headerHashKey = genericHashKey(headerHash)
+  info "persistHeaderToDb", headerHashKey=headerHashKey,headerHash=headerHash
+  db.db.put(headerHashKey.toOpenArray, rlp.encode(header))
 
-  let score = if isStartOfHistory: header.difficulty
-              else: db.getScore(header.parentHash) + header.difficulty
-  db.db.put(blockHashToScoreKey(headerHash).toOpenArray, rlp.encode(score))
+  let score = if isStartOfHistory: header.difficulty else: db.getScore(header.parentHash) + header.difficulty
+  var blockHashScoreKey = blockHashToScoreKey(headerHash)
+  info "persistHeaderToDb", blockHash=blockHashScoreKey, score=score
+  db.db.put(blockHashScoreKey.toOpenArray, rlp.encode(score))
 
   db.addBlockNumberToHashLookup(header)
 
   var headScore: UInt256
   try:
     var headHash = db.getCanonicalHead().hash
-    echo headHash
+    info "persistHeaderToDb", headHash=headHash
     headScore = db.getScore(headHash)
   except CanonicalHeadNotFound:
     return db.setAsCanonicalChainHead(headerHash)

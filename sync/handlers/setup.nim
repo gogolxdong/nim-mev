@@ -9,6 +9,7 @@ import
 
 
 proc setEthHandlerNewBlocksAndHashes*(node: var EthereumNode; blockHandler: NewBlockHandler; hashesHandler: NewBlockHashesHandler; arg: pointer; ) {.gcsafe, raises: [CatchableError].} =
+  echo "setEthHandlerNewBlocksAndHashes"
   let w = EthWireRef(node.protocolState protocol.eth)
   w.setNewBlockHandler(blockHandler, arg)
   w.setNewBlockHashesHandler(hashesHandler, arg)

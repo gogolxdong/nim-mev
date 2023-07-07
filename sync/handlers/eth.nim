@@ -534,8 +534,7 @@ method handleAnnouncedTxsHashes*(ctx: EthWireRef, peer: Peer, txHashes: openArra
 
   asyncSpawn ctx.fetchTransactions(reqHashes, peer)
 
-method handleNewBlock*(ctx: EthWireRef, peer: Peer, blk: EthBlock, totalDifficulty: DifficultyInt)
-    {.gcsafe, raises: [CatchableError].} =
+method handleNewBlock*(ctx: EthWireRef, peer: Peer, blk: EthBlock, totalDifficulty: DifficultyInt) {.gcsafe, raises: [CatchableError].} =
   # if ctx.chain.com.forkGTE(MergeFork):
   #   debug "Dropping peer for sending NewBlock after merge (EIP-3675)",
   #     peer, blockNumber=blk.header.blockNumber,
@@ -544,10 +543,7 @@ method handleNewBlock*(ctx: EthWireRef, peer: Peer, blk: EthBlock, totalDifficul
   #   return
 
   if not ctx.newBlockHandler.handler.isNil:
-    ctx.newBlockHandler.handler(
-      ctx.newBlockHandler.arg,
-      peer, blk, totalDifficulty
-    )
+    ctx.newBlockHandler.handler(ctx.newBlockHandler.arg, peer, blk, totalDifficulty)
 
 method handleNewBlockHashes*(ctx: EthWireRef, peer: Peer, hashes: openArray[NewBlockHashesAnnounce]) {.gcsafe, raises: [CatchableError].} =
   info "handleNewBlockHashes", peer=peer, hashes=hashes.mapIt(it.number)

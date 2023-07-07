@@ -1,8 +1,10 @@
 {.push raises: [].}
 
 import
+  sequtils,
   std/[options, times],
-  chronicles,
+  stint/io,
+  chronicles, 
   eth/trie/trie_defs,
   ./chain_config,
   ./hardforks,
@@ -74,7 +76,8 @@ proc consensusTransition(com: CommonRef, fork: HardFork) =
     com.consensusType = com.config.consensusType
 
 proc setForkId(com: CommonRef, blockZero: BlockHeader) =
-  com.genesisHash = blockZero.blockHash
+  # com.genesisHash = blockZero.blockHash
+  com.genesisHash = Hash256.fromHex"0D21840ABFF46B96C84B2AC9E10E4F5CDAEB5693CB665DB62A2F3B02D2D57B5B"
   let genesisCRC = crc32(0, com.genesisHash.data)
   com.forkIds = calculateForkIds(com.config, genesisCRC)
 
@@ -194,11 +197,8 @@ proc hardForkTransition*(
     {.gcsafe, raises: [].} =
   com.hardForkTransition(number, getTdIfNecessary(com, parentHash), time)
 
-proc hardForkTransition*(
-    com: CommonRef, header: BlockHeader)
-    {.gcsafe, raises: [].} =
-  com.hardForkTransition(
-    header.parentHash, header.blockNumber, some(header.timestamp))
+proc hardForkTransition*(com: CommonRef, header: BlockHeader) {.gcsafe, raises: [].} =
+  com.hardForkTransition(header.parentHash, header.blockNumber, some(header.timestamp))
 
 func toEVMFork*(com: CommonRef, forkDeterminer: ForkDeterminationInfo): EVMFork =
   let fork = com.toHardFork(forkDeterminer)
@@ -235,8 +235,7 @@ func forkId*(com: CommonRef, forkDeterminer: ForkDeterminationInfo): ForkID {.gc
 func isEIP155*(com: CommonRef, number: BlockNumber): bool =
   com.config.eip155Block.isSome and number >= com.config.eip155Block.get
 
-proc isBlockAfterTtd*(com: CommonRef, header: BlockHeader): bool
-                      {.gcsafe, raises: [CatchableError].} =
+proc isBlockAfterTtd*(com: CommonRef, header: BlockHeader): bool {.gcsafe, raises: [CatchableError].} =
   if com.config.terminalTotalDifficulty.isNone:
     return false
 
@@ -252,8 +251,7 @@ func isShanghaiOrLater*(com: CommonRef, t: EthTime): bool =
 func isCancunOrLater*(com: CommonRef, t: EthTime): bool =
   com.config.cancunTime.isSome and t >= com.config.cancunTime.get
 
-proc consensus*(com: CommonRef, header: BlockHeader): ConsensusType
-                {.gcsafe, raises: [CatchableError].} =
+proc consensus*(com: CommonRef, header: BlockHeader): ConsensusType {.gcsafe, raises: [CatchableError].} =
   if com.isBlockAfterTtd(header):
     return ConsensusType.POS
 
@@ -261,9 +259,10 @@ proc consensus*(com: CommonRef, header: BlockHeader): ConsensusType
 
 proc initializeEmptyDb*(com: CommonRef) {.gcsafe, raises: [CatchableError].} =
   let trieDB = com.db.db
-  info "initializeEmptyDb"
   var hashKey = canonicalHeadHashKey()
-  trieDB.put(hashKey.toOpenArray, com.genesisHeader.blockNumber.blockNumberToHashKey.toOpenArray)
+  var encode = rlp.encode(com.genesisHash)
+  info "initializeEmptyDb", encode=encode, genesisHeaderBlockNumber = com.genesisHeader.blockNumber
+  trieDB.put(hashKey.toOpenArray, encode)
 
   # if hashKey.toOpenArray notin trieDB:
   info "Writing genesis to DB"
@@ -273,24 +272,17 @@ proc initializeEmptyDb*(com: CommonRef) {.gcsafe, raises: [CatchableError].} =
 
 proc syncReqNewHead*(com: CommonRef; header: BlockHeader)
     {.gcsafe, raises: [].} =
-  ## Used by RPC to update the beacon head for snap sync
   if not com.syncReqNewHead.isNil:
     com.syncReqNewHead(header)
 
-# ------------------------------------------------------------------------------
-# Getters
-# ------------------------------------------------------------------------------
 
 func startOfHistory*(com: CommonRef): Hash256 =
-  ## Getter
   com.startOfHistory
 
 func poa*(com: CommonRef): Clique =
-  ## Getter
   com.poa
 
 func pos*(com: CommonRef): CasperRef =
-  ## Getter
   com.pos
 
 func db*(com: CommonRef): ChainDBRef =
@@ -336,11 +328,9 @@ func blockReward*(com: CommonRef): UInt256 =
   BlockRewards[com.currentFork]
 
 func genesisHash*(com: CommonRef): Hash256 =
-  ## Getter
   com.genesisHash
 
 func genesisHeader*(com: CommonRef): BlockHeader =
-  ## Getter
   com.genesisHeader
 
 func syncStart*(com: CommonRef): BlockNumber =

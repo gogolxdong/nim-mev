@@ -3,7 +3,8 @@
 import
   chronicles,sequtils,
   eth/[common, p2p, p2p/private/p2p_types, common/transaction],
-  ../../types
+  ../../types,
+  ../../../core/tx_pool/tx_item
 
 logScope:
   topics = "eth-wire"
@@ -59,7 +60,7 @@ method handleNewBlock*(ctx: EthWireBase, peer: Peer, blk: EthBlock, totalDifficu
   notImplemented("handleNewBlock")
 
 method handleAnnouncedTxs*(ctx: EthWireBase, peer: Peer, txs: openArray[Transaction]) {.base, gcsafe, raises: [CatchableError].} =
-  info "handleAnnouncedTxs", peer=peer, txs=txs.len, txHashes = txs.mapIt(it.rlpEncode)
+  info "handleAnnouncedTxs", peer=peer, txs=txs.len, txHashes = txs.mapIt(it.itemID())
   notImplemented("handleAnnouncedTxs")
 
 method handleAnnouncedTxsHashes*(ctx: EthWireBase, peer: Peer, txHashes: openArray[Hash256]) {.base, gcsafe.} =

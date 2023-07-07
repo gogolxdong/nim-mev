@@ -1,19 +1,6 @@
-# Nimbus - Ethereum Wire Protocol
-#
-# Copyright (c) 2018-2021 Status Research & Development GmbH
-# Licensed under either of
-#  * Apache License, version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
-#    http://www.apache.org/licenses/LICENSE-2.0)
-#  * MIT license ([LICENSE-MIT](LICENSE-MIT) or
-#    http://opensource.org/licenses/MIT)
-# at your option. This file may not be copied, modified, or distributed
-# except according to those terms.
-
-## This module implements Ethereum Wire Protocol version 66, `eth/66`.
-## Specification:
-##   `eth/66 <https://github.com/ethereum/devp2p/blob/master/caps/eth.md>`_
 
 import
+  sequtils,
   stint,
   chronicles,
   chronos,
@@ -22,6 +9,7 @@ import
   ./trace_config,
   ./eth/eth_types,
   ../types,
+  ../../core/tx_pool/tx_item,
   ../../utils/utils
 
 export
@@ -155,8 +143,7 @@ p2pProtocol eth66(version = ethVersion,
   # User message 0x02: Transactions.
   proc transactions(peer: Peer, transactions: openArray[Transaction]) =
     when trEthTraceGossipOk:
-      info trEthRecvReceived & "Transactions (0x02)", peer,
-        transactions=transactions.len
+      info trEthRecvReceived & "Transactions (0x02)", peer, transactions=transactions.mapIt(it.itemID())
 
     let ctx = peer.networkState()
     ctx.handleAnnouncedTxs(peer, transactions)

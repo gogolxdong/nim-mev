@@ -27,12 +27,12 @@ import
 # Private functions
 # ------------------------------------------------------------------------------
 
-proc eip1559BaseFee(header: BlockHeader; fork: EVMFork): UInt256 =
+proc eip1559BaseFee(header: BlockHeader; fork: EVMFork): UInt256 = 0.u256
   ## Actually, `baseFee` should be 0 for pre-London headers already. But this
   ## function just plays safe. In particular, the `test_general_state_json.nim`
   ## module modifies this block header `baseFee` field unconditionally :(.
-  if FkLondon <= fork:
-    result = header.baseFee
+  # if FkLondon <= fork:
+  #   result = header.baseFee
 
 proc commitOrRollbackDependingOnGasUsed(
     vmState: BaseVMState, accTx: SavePoint,
@@ -78,7 +78,8 @@ proc asyncProcessTransactionImpl(
     baseFee = baseFee256.truncate(GasInt)
     tx = eip1559TxNormalization(tx, baseFee, fork)
     priorityFee = min(tx.maxPriorityFee, tx.maxFee - baseFee)
-    excessDataGas = vmState.parent.excessDataGas.get(0'u64)
+    # excessDataGas = vmState.parent.excessDataGas.get(0'u64)
+    excessDataGas = 0'u64
 
   # Return failure unless explicitely set `ok()`
   var res: Result[GasInt, string] = err("")

@@ -8,7 +8,7 @@ import ./db/select_backend
 import ./evm/[evmc_api,types, state]
 import ./core/chain/chain_desc, ./core/tx_pool
 import ./sync/handlers/setup
-import ./sync/handlers
+import ./sync/[handlers,legacy]
 import lmdb
 import sequtils
 
@@ -37,19 +37,24 @@ proc setupTestNode*(rng: ref HmacDrbgContext, capabilities: varargs[ProtocolInfo
       bindTcpPort = nextPort,
       rng = rng)
 
-    # var dbBackend = newChainDB()
-    # let trieDB = trieDB dbBackend
-    # let comm = CommonRef.new(trieDB, pruneTrie=true, BSC, networkParams(BSC))
-    # comm.initializeEmptyDb()
-    # var chain = comm.newChain()
-    # var txPool = TxPoolRef.new(comm, pk.toPublicKey.toCanonicalAddress)   
+    var dbBackend = newChainDB()
+    let trieDB = trieDB dbBackend
+    let comm = CommonRef.new(trieDB, pruneTrie=true, BSC, networkParams(BSC))
+    comm.initializeEmptyDb()
+    var chain = comm.newChain()
+    var txPool = TxPoolRef.new(comm, pk.toPublicKey.toCanonicalAddress)   
 
     for capability in capabilities:
-      result.addCapability capability #, EthWireRef.new(chain, txPool, result.peerPool)
+      echo capability.name
+      result.addCapability capability , EthWireRef.new(chain, txPool, result.peerPool)
+
+    var legaSyncRef = LegacySyncRef.new(result, chain)
+    result.setEthHandlerNewBlocksAndHashes(legacy.newBlockHandler, legacy.newBlockHashesHandler, cast[pointer](legaSyncRef))
 
 var rng = newRng()
-var peer:Peer
 var node = setupTestNode(rng, eth )
+var peer:Peer
+
 proc startNode() =
   node.startListening()
 

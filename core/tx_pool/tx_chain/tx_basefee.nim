@@ -46,12 +46,10 @@ proc baseFeeGet*(com: CommonRef; parent: BlockHeader): GasPrice =
   if parentFork < FkLondon:
     return INITIAL_BASE_FEE.GasPrice
 
-  # TODO: which one is better?
-  # truncate parent.baseFee to uint64 first and do the operation in uint64
-  # or truncate the result?
-  calcEip1599BaseFee(parent.gasLimit,
-    parent.gasUsed,
-    parent.baseFee).truncate(uint64).GasPrice
+
+  # calcEip1599BaseFee(parent.gasLimit,
+  #   parent.gasUsed,
+  #   parent.baseFee).truncate(uint64).GasPrice
 
 # ------------------------------------------------------------------------------
 # End

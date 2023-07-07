@@ -32,7 +32,7 @@ type
     versionedHashes*: VersionedHashes
 
 proc toCallParams(vmState: BaseVMState, cd: RpcCallData,
-                  globalGasCap: GasInt, baseFee: Option[UInt256],
+                  globalGasCap: GasInt, baseFee: Option[UInt256] = some(0.u256),
                   forkOverride = none(EVMFork)): CallParams
     {.gcsafe, raises: [ValueError].} =
 
@@ -53,16 +53,16 @@ proc toCallParams(vmState: BaseVMState, cd: RpcCallData,
     gasLimit = globalGasCap
 
   var gasPrice = cd.gasPrice.get(0.GasInt)
-  if baseFee.isSome:
-    # A basefee is provided, necessitating EIP-1559-type execution
-    let maxPriorityFee = cd.maxPriorityFee.get(0.GasInt)
-    let maxFee = cd.maxFee.get(0.GasInt)
+  # if baseFee.isSome:
+  #   # A basefee is provided, necessitating EIP-1559-type execution
+  #   let maxPriorityFee = cd.maxPriorityFee.get(0.GasInt)
+  #   let maxFee = cd.maxFee.get(0.GasInt)
 
-    # Backfill the legacy gasPrice for EVM execution, unless we're all zeroes
-    if maxPriorityFee > 0 or maxFee > 0:
-      let baseFee = baseFee.get().truncate(GasInt)
-      let priorityFee = min(maxPriorityFee, maxFee - baseFee)
-      gasPrice = priorityFee + baseFee
+  #   # Backfill the legacy gasPrice for EVM execution, unless we're all zeroes
+  #   if maxPriorityFee > 0 or maxFee > 0:
+  #     let baseFee = baseFee.get().truncate(GasInt)
+  #     let priorityFee = min(maxPriorityFee, maxFee - baseFee)
+  #     gasPrice = priorityFee + baseFee
 
   CallParams(
     vmState:      vmState,
@@ -85,9 +85,9 @@ proc rpcCallEvm*(call: RpcCallData, header: BlockHeader, com: CommonRef): CallRe
     parentHash: header.blockHash,
     timestamp:  getTime().utc.toTime,
     gasLimit:   0.GasInt,          ## ???
-    fee:        UInt256.none())    ## ???
+    )    ## ???
   let vmState = BaseVMState.new(topHeader, com)
-  let params  = toCallParams(vmState, call, globalGasCap, header.fee)
+  let params  = toCallParams(vmState, call, globalGasCap)
 
   var dbTx = com.db.db.beginTransaction()
   defer: dbTx.dispose() # always dispose state changes
@@ -101,11 +101,11 @@ proc rpcEstimateGas*(cd: RpcCallData, header: BlockHeader, com: CommonRef, gasCa
     parentHash: header.blockHash,
     timestamp:  getTime().utc.toTime,
     gasLimit:   0.GasInt,          ## ???
-    fee:        UInt256.none())    ## ???
+    )    ## ???
   let vmState = BaseVMState.new(topHeader, com)
   let fork    = vmState.determineFork
   let txGas   = gasFees[fork][GasTransaction] # txGas always 21000, use constants?
-  var params  = toCallParams(vmState, cd, gasCap, header.fee)
+  var params  = toCallParams(vmState, cd, gasCap)
 
   var
     lo : GasInt = txGas - 1

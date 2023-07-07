@@ -237,17 +237,17 @@ proc validateHeader(ctx: LegacySyncRef, header: BlockHeader,
         parentNumber=parentHeader.blockNumber
       return false
 
-  res = com.validateWithdrawals(header, body)
-  if res.isErr:
-    trace "validate withdrawals error",
-      msg=res.error
-    return false
+  # res = com.validateWithdrawals(header, body)
+  # if res.isErr:
+  #   trace "validate withdrawals error",
+  #     msg=res.error
+  #   return false
 
-  res = com.validateEip4844Header(header, parentHeader, body.transactions)
-  if res.isErr:
-    trace "validate eip4844 error",
-      msg=res.error
-    return false
+  # res = com.validateEip4844Header(header, parentHeader, body.transactions)
+  # if res.isErr:
+  #   trace "validate eip4844 error",
+  #     msg=res.error
+  #   return false
 
   return true
 
@@ -983,8 +983,7 @@ proc handleNewBlockHashes(ctx: LegacySyncRef,
                           peer: Peer,
                           hashes: openArray[NewBlockHashesAnnounce]) =
 
-  trace trEthRecvNewBlockHashes,
-    numHash=hashes.len
+  info trEthRecvNewBlockHashes, numHash=hashes.len
 
   if hashes.len == 0:
     return
@@ -1037,9 +1036,7 @@ proc handleNewBlock(ctx: LegacySyncRef,
                     totalDifficulty: DifficultyInt) {.
                       gcsafe, raises: [CatchableError].} =
 
-  trace trEthRecvNewBlock,
-    number=blk.header.blockNumber,
-    hash=short(blk.header.blockHash)
+  info trEthRecvNewBlock, number=blk.header.blockNumber, hash=short(blk.header.blockHash)
 
   if ctx.lastCleanup - getTime() > CleanupInterval:
     ctx.cleanupKnownByPeer()

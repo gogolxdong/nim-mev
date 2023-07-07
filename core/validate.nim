@@ -109,8 +109,8 @@ proc validateHeader(com: CommonRef; header, parentHeader: BlockHeader;
     if header.ommersHash != EMPTY_UNCLE_HASH:
       return err("Invalid ommers hash in a post-merge block")
 
-  ? com.validateWithdrawals(header, body)
-  ? com.validateEip4844Header(header, parentHeader, body.transactions)
+  # ? com.validateWithdrawals(header, body)
+  # ? com.validateEip4844Header(header, parentHeader, body.transactions)
 
   ok()
 
