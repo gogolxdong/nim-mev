@@ -37,15 +37,15 @@ proc setupTestNode*(rng: ref HmacDrbgContext, capabilities: varargs[ProtocolInfo
       bindTcpPort = nextPort,
       rng = rng)
 
-    var dbBackend = newChainDB()
-    let trieDB = trieDB dbBackend
-    let comm = CommonRef.new(trieDB, pruneTrie=true, BSC, networkParams(BSC))
-    comm.initializeEmptyDb()
-    var chain = comm.newChain()
-    var txPool = TxPoolRef.new(comm, pk.toPublicKey.toCanonicalAddress)   
+    # var dbBackend = newChainDB()
+    # let trieDB = trieDB dbBackend
+    # let comm = CommonRef.new(trieDB, pruneTrie=true, BSC, networkParams(BSC))
+    # comm.initializeEmptyDb()
+    # var chain = comm.newChain()
+    # var txPool = TxPoolRef.new(comm, pk.toPublicKey.toCanonicalAddress)   
 
     for capability in capabilities:
-      result.addCapability capability, EthWireRef.new(chain, txPool, result.peerPool)
+      result.addCapability capability #, EthWireRef.new(chain, txPool, result.peerPool)
 
 var rng = newRng()
 var peer:Peer

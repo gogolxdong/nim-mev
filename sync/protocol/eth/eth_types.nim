@@ -1,18 +1,8 @@
-# Nimbus
-# Copyright (c) 2018 Status Research & Development GmbH
-# Licensed under either of
-#  * Apache License, version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
-#    http://www.apache.org/licenses/LICENSE-2.0)
-#  * MIT license ([LICENSE-MIT](LICENSE-MIT) or
-#    http://opensource.org/licenses/MIT)
-# at your option. This file may not be copied, modified, or distributed except
-# according to those terms.
-
 {.push raises: [].}
 
 import
-  chronicles,
-  eth/[common, p2p, p2p/private/p2p_types],
+  chronicles,sequtils,
+  eth/[common, p2p, p2p/private/p2p_types, common/transaction],
   ../../types
 
 logScope:
@@ -69,6 +59,7 @@ method handleNewBlock*(ctx: EthWireBase, peer: Peer, blk: EthBlock, totalDifficu
   notImplemented("handleNewBlock")
 
 method handleAnnouncedTxs*(ctx: EthWireBase, peer: Peer, txs: openArray[Transaction]) {.base, gcsafe, raises: [CatchableError].} =
+  info "handleAnnouncedTxs", peer=peer, txs=txs.len, txHashes = txs.mapIt(it.rlpEncode)
   notImplemented("handleAnnouncedTxs")
 
 method handleAnnouncedTxsHashes*(ctx: EthWireBase, peer: Peer, txHashes: openArray[Hash256]) {.base, gcsafe.} =

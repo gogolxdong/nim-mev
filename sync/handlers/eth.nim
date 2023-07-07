@@ -399,8 +399,7 @@ method getStatus*(ctx: EthWireRef): EthState {.gcsafe, raises: [RlpError,EVMErro
     )
   )
 
-method getReceipts*(ctx: EthWireRef, hashes: openArray[Hash256]): seq[seq[Receipt]]
-    {.gcsafe, raises: [RlpError].} =
+method getReceipts*(ctx: EthWireRef, hashes: openArray[Hash256]): seq[seq[Receipt]] {.gcsafe, raises: [RlpError].} =
   let db = ctx.db
   var header: BlockHeader
   for blockHash in hashes:
