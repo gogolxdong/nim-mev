@@ -72,7 +72,7 @@ proc startNode() =
     node.peerPool.running = false
     if peer != nil:
       waitFor peer.disconnect(ClientQuitting, true)
-    info "disconnect"
+      info "disconnect"
   setControlCHook(controlCHandler)
 
   # node.peerPool.start()

@@ -179,10 +179,7 @@ proc validateDifficulty(ctx: LegacySyncRef,
       exc = e.name, err = e.msg
     return false
 
-proc validateHeader(ctx: LegacySyncRef, header: BlockHeader,
-                    body: BlockBody,
-                    height = none(BlockNumber)): bool
-                    {.raises: [CatchableError].} =
+proc validateHeader(ctx: LegacySyncRef, header: BlockHeader, body: BlockBody, height = none(BlockNumber)): bool {.raises: [CatchableError].} =
   if header.parentHash == GENESIS_PARENT_HASH:
     return true
 
@@ -317,10 +314,6 @@ proc broadcastBlockHash(ctx: LegacySyncRef, blk: EthBlock, peers: seq[Peer]) {.a
     debug "Exception in broadcastBlockHash", exc = e.name, err = e.msg
 
 proc sendBlockOrHash(ctx: LegacySyncRef, peer: Peer) {.async.} =
-  # because peer TD is lower than us,
-  # it become our recipient of block and block hashes
-  # instead of we download from it
-
   try:
     let
       db = ctx.chain.db
@@ -456,8 +449,7 @@ proc availableWorkItem(ctx: LegacySyncRef): int =
     state     : Initial,
     isHash    : false)
 
-proc appendWorkItem(ctx: LegacySyncRef, hash: Hash256,
-                    startIndex: BlockNumber, numBlocks: uint) =
+proc appendWorkItem(ctx: LegacySyncRef, hash: Hash256, startIndex: BlockNumber, numBlocks: uint) =
   for i in 0 .. ctx.workQueue.high:
     if ctx.workQueue[i].state == Persisted:
       ctx.workQueue[i] = WantedBlocks(

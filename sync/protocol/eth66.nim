@@ -216,8 +216,7 @@ p2pProtocol eth66(version = ethVersion,
   # User message 0x08: NewPooledTransactionHashes.
   proc newPooledTransactionHashes(peer: Peer, txHashes: openArray[Hash256]) =
     when trEthTraceGossipOk:
-      info trEthRecvReceived & "NewPooledTransactionHashes (0x08)", peer,
-        hashes=txHashes.len
+      info trEthRecvReceived & "NewPooledTransactionHashes (0x08)", peer, hashes=txHashes.len
 
     let ctx = peer.networkState()
     ctx.handleAnnouncedTxsHashes(peer, txHashes)
@@ -225,17 +224,14 @@ p2pProtocol eth66(version = ethVersion,
   requestResponse:
     # User message 0x09: GetPooledTransactions.
     proc getPooledTransactions(peer: Peer, txHashes: openArray[Hash256]) =
-      info trEthRecvReceived & "GetPooledTransactions (0x09)", peer,
-        hashes=txHashes.len
+      info trEthRecvReceived & "GetPooledTransactions (0x09)", peer,hashes=txHashes.len
 
       let ctx = peer.networkState()
       let txs = ctx.getPooledTxs(txHashes)
       if txs.len > 0:
-        info trEthSendReplying & "with PooledTransactions (0x0a)", peer,
-          sent=txs.len, requested=txHashes.len
+        info trEthSendReplying & "with PooledTransactions (0x0a)", peer, sent=txs.len, requested=txHashes.len
       else:
-        info trEthSendReplying & "EMPTY PooledTransactions (0x0a)", peer,
-          sent=0, requested=txHashes.len
+        info trEthSendReplying & "EMPTY PooledTransactions (0x0a)", peer, sent=0, requested=txHashes.len
 
       await response.send(txs)
 

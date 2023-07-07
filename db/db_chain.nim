@@ -448,8 +448,8 @@ proc getReceipts*(db: ChainDBRef; receiptRoot: Hash256): seq[Receipt] =
 
 proc persistHeaderToDb*(db: ChainDBRef;header: BlockHeader;forceCanonical: bool;startOfHistory = GENESIS_PARENT_HASH): seq[BlockHeader] =
   let isStartOfHistory = header.parentHash == startOfHistory
-  # let headerHash = header.blockHash
-  let headerHash = Hash256.fromHex"0D21840ABFF46B96C84B2AC9E10E4F5CDAEB5693CB665DB62A2F3B02D2D57B5B"
+  let headerHash = header.blockHash
+  # let headerHash = Hash256.fromHex"0D21840ABFF46B96C84B2AC9E10E4F5CDAEB5693CB665DB62A2F3B02D2D57B5B"
   if not isStartOfHistory and not db.headerExists(header.parentHash):
     raise newException(ParentNotFound, "Cannot persist block header " & $headerHash & " with unknown parent " & $header.parentHash)
   var headerHashKey = genericHashKey(headerHash)

@@ -248,8 +248,7 @@ proc sendTransactions(ctx: EthWireRef,
     debug "Exception in sendTransactions", exc = e.name, err = e.msg
 
 proc fetchTransactions(ctx: EthWireRef, reqHashes: seq[Hash256], peer: Peer): Future[void] {.async.} =
-  debug "fetchTx: requesting txs",
-    number = reqHashes.len
+  info "fetchTx: requesting txs", number = reqHashes.len
 
   try:
 
@@ -390,8 +389,8 @@ method getStatus*(ctx: EthWireRef): EthState {.gcsafe, raises: [RlpError,EVMErro
 
   EthState(
     totalDifficulty: db.headTotalDifficulty,
-    # genesisHash: com.genesisHash,
-    genesisHash: Hash256.fromHex"0D21840ABFF46B96C84B2AC9E10E4F5CDAEB5693CB665DB62A2F3B02D2D57B5B",
+    genesisHash: com.genesisHash,
+    # genesisHash: Hash256.fromHex"0D21840ABFF46B96C84B2AC9E10E4F5CDAEB5693CB665DB62A2F3B02D2D57B5B",
     bestBlockHash: bestBlock.blockHash,
     forkId: ChainForkId(
       forkHash: [byte(41),149,197,42], #forkId.crc.toBytesBE,
@@ -416,7 +415,7 @@ method getPooledTxs*(ctx: EthWireRef, hashes: openArray[Hash256]): seq[Transacti
     if res.isOk:
       result.add res.value.tx
     else:
-      trace "handlers.getPooledTxs: tx not found", txHash
+      info "handlers.getPooledTxs: tx not found", txHash
 
 method getBlockBodies*(ctx: EthWireRef, hashes: openArray[Hash256]): seq[BlockBody]
     {.gcsafe, raises: [RlpError].} =
@@ -459,10 +458,9 @@ method handleAnnouncedTxs*(ctx: EthWireRef, peer: Peer, txs: openArray[Transacti
   info "received new transactions", number = txs.len
 
   try:
-    let comm = CommonRef.new(ctx.db.TrieDatabaseRef, pruneTrie=true, BSC, networkParams(BSC))
+    let comm = CommonRef.new(ctx.db.db, pruneTrie=true, BSC, networkParams(BSC))
     let chain = comm.newChain()
     let header = chain.currentBlock()
-    echo header
     var vmState = BaseVMState.new(header, comm)
     for tx in txs:
       var txItem = TxItemRef.new(tx, tx.itemID, txItemPending, "").get()
@@ -526,8 +524,7 @@ method handleAnnouncedTxsHashes*(ctx: EthWireRef, peer: Peer, txHashes: openArra
   if reqHashes.len == 0:
     return
 
-  debug "handleAnnouncedTxsHashes: received new tx hashes",
-    number = reqHashes.len
+  info "handleAnnouncedTxsHashes: received new tx hashes", number = reqHashes.len
 
   for txHash in reqHashes:
     ctx.pending.incl txHash
@@ -549,15 +546,12 @@ method handleNewBlockHashes*(ctx: EthWireRef, peer: Peer, hashes: openArray[NewB
   info "handleNewBlockHashes", peer=peer, hashes=hashes.mapIt(it.number)
 
   try:
-    TrieDatabaseRef(ctx.db).put([canonicalHeadHash.ord.byte,0], hashes[0].number.toBytesLE)
+    var hashKey = canonicalHeadHashKey()
+    ctx.db.db.put(hashKey.toOpenArray, rlp.encode hashes[0].number)
   except:
     echo getCurrentExceptionMsg()
   if not ctx.newBlockHashesHandler.handler.isNil:
-    ctx.newBlockHashesHandler.handler(
-      ctx.newBlockHashesHandler.arg,
-      peer,
-      hashes
-    )
+    ctx.newBlockHashesHandler.handler(ctx.newBlockHashesHandler.arg,peer,hashes)
 
 when defined(legacy_eth66_enabled):
   method getStorageNodes*(ctx: EthWireRef, hashes: openArray[Hash256]): seq[Blob] {.gcsafe.} =

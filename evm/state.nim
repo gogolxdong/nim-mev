@@ -235,9 +235,7 @@ proc new*(
       com:         CommonRef;       ## block chain config
       tracerFlags: set[TracerFlags] = {}): T
     {.gcsafe, raises: [CatchableError].} =
-  ## This is a variant of the `new()` constructor above where the field
-  ## `header.parentHash`, is used to fetch the `parent` BlockHeader to be
-  ## used in the `new()` variant, above.
+
   BaseVMState.new(
     parent      = com.db.getBlockHeader(header.parentHash),
     header      = header,

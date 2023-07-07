@@ -19,7 +19,7 @@ proc get*(db: LMDBStoreRef, key: openArray[byte], onData: kvstore.DataProc): KvR
         # info "lmdb", dataLen=dataVal.mvSize, data = data.toOpenArray(0, dataVal.mvSize.int - 1)
         onData(data.toOpenArray(0, dataVal.mvSize.int - 1))
         txn.abort()
-        db.store.close(dbi)
+        # db.store.close(dbi)
     ok(true)
 
 proc find*(db: LMDBStoreRef, prefix: openArray[byte], onFind: kvstore.KeyValueProc): KvResult[void] =

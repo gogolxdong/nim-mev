@@ -76,8 +76,8 @@ proc consensusTransition(com: CommonRef, fork: HardFork) =
     com.consensusType = com.config.consensusType
 
 proc setForkId(com: CommonRef, blockZero: BlockHeader) =
-  # com.genesisHash = blockZero.blockHash
-  com.genesisHash = Hash256.fromHex"0D21840ABFF46B96C84B2AC9E10E4F5CDAEB5693CB665DB62A2F3B02D2D57B5B"
+  com.genesisHash = blockZero.blockHash
+  # com.genesisHash = Hash256.fromHex"0D21840ABFF46B96C84B2AC9E10E4F5CDAEB5693CB665DB62A2F3B02D2D57B5B"
   let genesisCRC = crc32(0, com.genesisHash.data)
   com.forkIds = calculateForkIds(com.config, genesisCRC)
 
