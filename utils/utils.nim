@@ -68,10 +68,10 @@ proc decompose*(rlp: var Rlp,
                 header: var BlockHeader, 
                 body: var BlockBody) {.gcsafe, raises: [RlpError].} =
   var blk = rlp.read(EthBlock)
-  header = system.move(blk.header)
-  body.transactions = system.move(blk.txs)
-  body.uncles = system.move(blk.uncles)
-  body.withdrawals = system.move(blk.withdrawals)
+  header = blk.header
+  body.transactions = blk.txs
+  body.uncles = blk.uncles
+  # body.withdrawals = system.move(blk.withdrawals)
 
 proc decompose*(rlpBytes: openArray[byte], 
                 header: var BlockHeader, 

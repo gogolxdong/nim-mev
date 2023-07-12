@@ -391,7 +391,6 @@ proc genesisBlockForNetwork*(id: NetworkId): Genesis {.gcsafe, raises: [ValueErr
       gasLimit: 0x2625a00,
       gasUsed: 0,
       difficulty: 1.u256,
-      # alloc: GenesisAlloc.default
     )
   else:
     Genesis()

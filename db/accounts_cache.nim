@@ -229,9 +229,7 @@ proc clone(acc: RefAccount, cloneStorage: bool): RefAccount =
     result.overlayStorage = acc.overlayStorage
 
 proc isEmpty(acc: RefAccount): bool =
-  result = acc.account.codeHash == EMPTY_SHA3 and
-    acc.account.balance.isZero and
-    acc.account.nonce == 0
+  result = acc.account.codeHash == EMPTY_SHA3 and acc.account.balance.isZero and acc.account.nonce == 0
 
 template exists(acc: RefAccount): bool =
   Alive in acc.flags
@@ -262,7 +260,6 @@ proc originalStorageValue(acc: RefAccount, slot: UInt256, db: TrieDatabaseRef): 
     acc.originalStorage[].withValue(slot, val) do:
       return val[]
 
-  # Not in the original values cache - go to the DB.
   let
     slotAsKey = createTrieKeyFromSlot slot
     storageTrie = getStorageTrie(db, acc)
@@ -312,8 +309,7 @@ proc persistCode(acc: RefAccount, db: TrieDatabaseRef) =
 
 proc persistStorage(acc: RefAccount, db: TrieDatabaseRef, clearCache: bool) =
   if acc.overlayStorage.len == 0:
-    # TODO: remove the storage too if we figure out
-    # how to create 'virtual' storage room for each account
+    # TODO: remove the storage too if we figure out how to create 'virtual' storage room for each account
     return
 
   if not clearCache and acc.originalStorage.isNil:
@@ -330,8 +326,7 @@ proc persistStorage(acc: RefAccount, db: TrieDatabaseRef, clearCache: bool) =
     else:
       storageTrie.delSlotBytes(slotAsKey)
 
-    # TODO: this can be disabled if we do not perform
-    #       accounts tracing
+    # TODO: this can be disabled if we do not perform accounts tracing
     # map slothash back to slot value
     # see iterator storage below
     # slotHash can be obtained from storageTrie.putSlotBytes?
@@ -561,8 +556,7 @@ proc persist*(ac: AccountsCache,
       if CodeChanged in acc.flags:
         acc.persistCode(ac.db)
       if StorageChanged in acc.flags:
-        # storageRoot must be updated first
-        # before persisting account into merkle trie
+        # storageRoot must be updated first before persisting account into merkle trie
         acc.persistStorage(ac.db, clearCache)
       ac.trie.putAccountBytes address, rlp.encode(acc.account)
     of Remove:
@@ -570,8 +564,6 @@ proc persist*(ac: AccountsCache,
       if not clearCache:
         cleanAccounts.incl address
     of DoNothing:
-      # dead man tell no tales
-      # remove touched dead account from cache
       if not clearCache and Alive notin acc.flags:
         cleanAccounts.incl address
 

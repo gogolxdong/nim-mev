@@ -29,7 +29,7 @@ from web3/ethtypes import Quantity
 #from ../../../premix/parser import prefixHex, parseBlockHeader, parseReceipt, parseTransaction
 
 # Trying to do things the new web3 way:
-from ../../../nimbus_verified_proxy/validate_proof import getAccountFromProof
+# from ../../../nimbus_verified_proxy/validate_proof import getAccountFromProof
 
 export AsyncOperationFactory, AsyncDataSource
 
@@ -106,7 +106,7 @@ func blockHeaderFromBlockObject(o: BlockObject): BlockHeader =
     extraData: distinctBase(o.extraData),
     #mixDigest: o.mixHash.toHash, # AARDVARK what's this?
     nonce: nonce,
-    # fee: o.baseFeePerGas,
+    fee: o.baseFeePerGas,
     # withdrawalsRoot: o.withdrawalsRoot.map(toHash),
     # dataGasUsed: fromQty(o.dataGasUsed),
     # excessDataGas: fromQty(o.excessDataGas)
@@ -213,12 +213,12 @@ proc fetchCode*(client: RpcClient, blockNumber: BlockNumber, address: EthAddress
 const bytesLimit = 2 * 1024 * 1024
 const maxNumberOfPeersToAttempt = 3
 
-proc fetchUsingGetTrieNodes(peer: Peer, stateRoot: Hash256, paths: seq[SnapTriePaths]): Future[seq[seq[byte]]] {.async.} =
-  let r = await peer.getTrieNodes(stateRoot, paths, bytesLimit)
-  if r.isNone:
-    raise newException(CatchableError, "AARDVARK: received None in GetTrieNodes response")
-  else:
-    return r.get.nodes
+# proc fetchUsingGetTrieNodes(peer: Peer, stateRoot: Hash256, paths: seq[SnapTriePaths]): Future[seq[seq[byte]]] {.async.} =
+#   let r = await peer.getTrieNodes(stateRoot, paths, bytesLimit)
+#   if r.isNone:
+#     raise newException(CatchableError, "AARDVARK: received None in GetTrieNodes response")
+#   else:
+#     return r.get.nodes
 
 proc fetchUsingGetNodeData(peer: Peer, nodeHashes: seq[Hash256]): Future[seq[seq[byte]]] {.async.} =
   #[
@@ -253,21 +253,21 @@ proc findPeersAndMakeSomeCalls[R](peerPool: PeerPool, protocolName: string, prot
       break
   return attempts
 
-proc findPeersAndMakeSomeAttemptsToCallGetTrieNodes(peerPool: PeerPool, stateRoot: Hash256, paths: seq[SnapTriePaths]): Future[seq[Future[seq[seq[byte]]]]] =
-  findPeersAndMakeSomeCalls(peerPool, "snap", protocol.snap, (proc(peer: Peer): Future[seq[seq[byte]]] = fetchUsingGetTrieNodes(peer, stateRoot, paths)))
+# proc findPeersAndMakeSomeAttemptsToCallGetTrieNodes(peerPool: PeerPool, stateRoot: Hash256, paths: seq[SnapTriePaths]): Future[seq[Future[seq[seq[byte]]]]] =
+#   findPeersAndMakeSomeCalls(peerPool, "snap", protocol.snap, (proc(peer: Peer): Future[seq[seq[byte]]] = fetchUsingGetTrieNodes(peer, stateRoot, paths)))
 
 #[
 proc findPeersAndMakeSomeAttemptsToCallGetNodeData(peerPool: PeerPool, stateRoot: Hash256, nodeHashes: seq[Hash256]): Future[seq[Future[seq[seq[byte]]]]] =
   findPeersAndMakeSomeCalls(peerPool, "eth66", eth66, (proc(peer: Peer): Future[seq[seq[byte]]] = fetchUsingGetNodeData(peer, nodeHashes)))
 ]#
 
-proc fetchNodes(peerPool: PeerPool, stateRoot: Hash256, paths: seq[SnapTriePaths], nodeHashes: seq[Hash256]): Future[seq[seq[byte]]] {.async.} =
-  let attempts = await findPeersAndMakeSomeAttemptsToCallGetTrieNodes(peerPool, stateRoot, paths)
-  #let attempts = await findPeersAndMakeSomeAttemptsToCallGetNodeData(peerPool, stateRoot, nodeHashes)
-  let completedAttempt = await one(attempts)
-  let nodes: seq[seq[byte]] = completedAttempt.read
-  info("AARDVARK: fetchNodes received nodes", nodes)
-  return nodes
+# proc fetchNodes(peerPool: PeerPool, stateRoot: Hash256, paths: seq[SnapTriePaths], nodeHashes: seq[Hash256]): Future[seq[seq[byte]]] {.async.} =
+#   let attempts = await findPeersAndMakeSomeAttemptsToCallGetTrieNodes(peerPool, stateRoot, paths)
+#   #let attempts = await findPeersAndMakeSomeAttemptsToCallGetNodeData(peerPool, stateRoot, nodeHashes)
+#   let completedAttempt = await one(attempts)
+#   let nodes: seq[seq[byte]] = completedAttempt.read
+#   info("AARDVARK: fetchNodes received nodes", nodes)
+#   return nodes
 
 proc verifyFetchedAccount(stateRoot: Hash256, address: EthAddress, acc: Account, accProof: seq[seq[byte]]): Result[void, string] =
   let accKey = toSeq(keccakHash(address).data)
@@ -342,7 +342,7 @@ proc assertThatWeHaveStoredAccount(trie: AccountsTrie, address: EthAddress, fetc
   doAssert(trie.hasAllNodesForAccount(address), "Can I check the account this way, too?")
 
 
-proc verifyFetchedSlot(accountStorageRoot: Hash256, slot: UInt256, fetchedVal: UInt256, storageMptNodes: seq[seq[byte]]): Result[void, string] =
+proc verifyFetchedSlot*(accountStorageRoot: Hash256, slot: UInt256, fetchedVal: UInt256, storageMptNodes: seq[seq[byte]]): Result[void, string] =
   if storageMptNodes.len == 0:
     # I think an empty storage proof is okay; I see lots of these
     # where the account is empty and the value is zero.
@@ -385,7 +385,7 @@ proc assertThatWeHaveStoredBlockHeader(chainDB: ChainDBRef, blockNumber: BlockNu
   let h = chainDB.getBlockHash(blockNumber)
   doAssert(h == header.blockHash, "stored the block header for block " & $(blockNumber))
 
-proc raiseExceptionIfError[V, E](whatAreWeVerifying: V, r: Result[void, E]) =
+proc raiseExceptionIfError*[V, E](whatAreWeVerifying: V, r: Result[void, E]) =
   if r.isErr:
     error("async code failed to verify", whatAreWeVerifying=whatAreWeVerifying, err=r.error)
     raise newException(CatchableError, "async code failed to verify: " & $(whatAreWeVerifying) & ", error is: " & $(r.error))
@@ -404,8 +404,7 @@ proc ifNecessaryGetAccountAndSlots*(client: RpcClient, db: TrieDatabaseRef, bloc
   else:
     let (acc, accProof, storageProofs) = await fetchAccountAndSlots(client, address, slotsToActuallyFetch, blockNumber)
 
-    # We need to verify the proof even if we already had this account,
-    # to make sure the data is valid.
+    # We need to verify the proof even if we already had this account, to make sure the data is valid.
     let accountVerificationRes = verifyFetchedAccount(stateRoot, address, acc, accProof)
     let whatAreWeVerifying = ("account proof", address, acc)
     raiseExceptionIfError(whatAreWeVerifying, accountVerificationRes)
@@ -434,8 +433,7 @@ proc ifNecessaryGetAccountAndSlots*(client: RpcClient, db: TrieDatabaseRef, bloc
       if not justCheckingSlots:
         populateDbWithBranch(db, storageMptNodes)
 
-        # I believe this is done so that we can iterate over the slots. See
-        # persistStorage in accounts_cache.nim.
+        # I believe this is done so that we can iterate over the slots. See persistStorage in accounts_cache.nim.
         let slotAsKey = createTrieKeyFromSlot(slot)
         let slotHash = keccakHash(slotAsKey)
         let slotEncoded = rlp.encode(slot)
@@ -446,8 +444,8 @@ proc ifNecessaryGetAccountAndSlots*(client: RpcClient, db: TrieDatabaseRef, bloc
           assertThatWeHaveStoredSlot(trie2, address, acc, slot, fetchedVal, true)
 
 proc ifNecessaryGetCode*(client: RpcClient, db: TrieDatabaseRef, blockNumber: BlockNumber, stateRoot: Hash256, address: EthAddress, justChecking: bool, newStateRootForSanityChecking: Hash256): Future[void] {.async.} =
-  await ifNecessaryGetAccountAndSlots(client, db, blockNumber, stateRoot, address, @[], false, false, newStateRootForSanityChecking)  # to make sure we've got the codeHash
-  let trie = initAccountsTrie(db, stateRoot, false)  # important for sanity checks
+  await ifNecessaryGetAccountAndSlots(client, db, blockNumber, stateRoot, address, @[], false, false, newStateRootForSanityChecking)  
+  let trie = initAccountsTrie(db, stateRoot, false)  
 
   let acc = ifNodesExistGetAccount(trie, address).get
   let desiredCodeHash = acc.codeHash

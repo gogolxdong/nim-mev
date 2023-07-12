@@ -46,10 +46,10 @@ proc setupTestNode*(rng: ref HmacDrbgContext, capabilities: varargs[ProtocolInfo
 
     for capability in capabilities:
       echo capability.name
-      result.addCapability capability , EthWireRef.new(chain, txPool, result.peerPool)
+      result.addCapability capability #, EthWireRef.new(chain, txPool, result.peerPool)
 
-    var legaSyncRef = LegacySyncRef.new(result, chain)
-    result.setEthHandlerNewBlocksAndHashes(legacy.newBlockHandler, legacy.newBlockHashesHandler, cast[pointer](legaSyncRef))
+    # var legaSyncRef = LegacySyncRef.new(result, chain)
+    # result.setEthHandlerNewBlocksAndHashes(legacy.newBlockHandler, legacy.newBlockHashesHandler, cast[pointer](legaSyncRef))
 
 var rng = newRng()
 var node = setupTestNode(rng, eth )

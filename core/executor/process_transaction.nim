@@ -28,9 +28,6 @@ import
 # ------------------------------------------------------------------------------
 
 proc eip1559BaseFee(header: BlockHeader; fork: EVMFork): UInt256 = 0.u256
-  ## Actually, `baseFee` should be 0 for pre-London headers already. But this
-  ## function just plays safe. In particular, the `test_general_state_json.nim`
-  ## module modifies this block header `baseFee` field unconditionally :(.
   # if FkLondon <= fork:
   #   result = header.baseFee
 
@@ -62,15 +59,12 @@ proc commitOrRollbackDependingOnGasUsed(
     return ok(gasBurned)
 
 proc asyncProcessTransactionImpl(
-    vmState: BaseVMState; ## Parent accounts environment for transaction
-    tx:      Transaction; ## Transaction to validate
-    sender:  EthAddress;  ## tx.getSender or tx.ecRecover
-    header:  BlockHeader; ## Header for the block containing the current tx
+    vmState: BaseVMState; 
+    tx:      Transaction;
+    sender:  EthAddress; 
+    header:  BlockHeader; 
     fork:    EVMFork): Future[Result[GasInt, string]]
-    # wildcard exception, wrapped below
     {.async, gcsafe.} =
-  ## Modelled after `https://eips.ethereum.org/EIPS/eip-1559#specification`_
-  ## which provides a backward compatible framwork for EIP1559.
 
   let
     roDB = vmState.readOnlyStateDB
@@ -81,33 +75,23 @@ proc asyncProcessTransactionImpl(
     # excessDataGas = vmState.parent.excessDataGas.get(0'u64)
     excessDataGas = 0'u64
 
-  # Return failure unless explicitely set `ok()`
   var res: Result[GasInt, string] = err("")
 
   await ifNecessaryGetAccounts(vmState, @[sender, vmState.coinbase()])
   if tx.to.isSome:
     await ifNecessaryGetCode(vmState, tx.to.get)
 
-  # buy gas, then the gas goes into gasMeter
   if vmState.gasPool < tx.gasLimit:
     return err("gas limit reached. gasLimit=$1, gasNeeded=$2" % [
       $vmState.gasPool, $tx.gasLimit])
 
   vmState.gasPool -= tx.gasLimit
 
-  # Actually, the eip-1559 reference does not mention an early exit.
-  #
-  # Even though database was not changed yet but, a `persist()` directive
-  # before leaving is crucial for some unit tests that us a direct/deep call
-  # of the `processTransaction()` function. So there is no `return err()`
-  # statement, here.
   let txRes = roDB.validateTransaction(tx, sender, header.gasLimit, baseFee256, excessDataGas, fork)
   if txRes.isOk:
 
-    # EIP-1153
     vmState.stateDB.clearTransientStorage()
 
-    # Execute the transaction.
     let
       accTx = vmState.stateDB.beginSavepoint
       gasBurned = tx.txCallEvm(sender, vmState, fork)
@@ -118,9 +102,7 @@ proc asyncProcessTransactionImpl(
 
   if vmState.generateWitness:
     vmState.stateDB.collectWitnessData()
-  vmState.stateDB.persist(
-    clearEmptyAccount = fork >= FkSpurious,
-    clearCache = false)
+  vmState.stateDB.persist(clearEmptyAccount = fork >= FkSpurious, clearCache = false)
 
   return res
 

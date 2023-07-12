@@ -1,17 +1,25 @@
 {.push raises: [].}
 
 import
-  std/[tables, times, hashes, sets, sequtils],
-  chronicles, chronos,
-  eth/p2p, eth/common/transaction,
+  std/[tables, times, hashes, sets, sequtils, typetraits, json],
+  chronicles, 
+  chronos,
+  eth/p2p,
   eth/p2p/peer_pool,
-  ../[types, protocol],
+  stew/byteutils,
+  ".."/[types, protocol],
   ../protocol/eth/eth_types,
-  ../protocol/trace_config, # gossip noise control
-  ../../core/[chain, tx_pool, tx_pool/tx_item],
+  ../protocol/trace_config, 
+  ../../core/[chain, tx_pool, tx_pool/tx_item, tx_pool/tx_desc, tx_pool/tx_tasks/tx_dispose, tx_pool/tx_tasks/tx_add, tx_pool/tx_tabs],
+  ../../core/executor/[process_transaction, process_block],
   ../../evm/[types,state],
-  ../../core/executor/process_transaction,
-  ../../db/storage_types
+  ../../db/[storage_types,accounts_cache, state_db, incomplete_db, distinct_tries],
+  ../../evm/async/data_sources/json_rpc_data_source,
+  ../../stateless_runner,
+  ../../transaction/call_evm,
+  ../../rpc/rpc_utils,
+  ../../transaction,
+  ../../tracer
 
 logScope:
   topics = "eth-wire"
@@ -457,17 +465,49 @@ method handleAnnouncedTxs*(ctx: EthWireRef, peer: Peer, txs: openArray[Transacti
   info "received new transactions", number = txs.len
 
   try:
-    let comm = CommonRef.new(ctx.db.db, pruneTrie=true, BSC, networkParams(BSC))
-    let chain = comm.newChain()
-    let header = chain.currentBlock()
-    var vmState = BaseVMState.new(header, comm)
+    let header = ctx.chain.currentBlock()
+    # info "handleAnnouncedTxs", parentHash=header.parentHash, headerHash=header.blockHash, txs=txs.len
+    var vmState = BaseVMState.new(header, ctx.chain.com)
+    let fork = vmState.com.toEVMFork(header.forkDeterminationInfoForHeader)
+    let accountDB = newAccountStateDB(ctx.db.db, header.stateRoot, ctx.chain.com.pruneTrie)
+    var address = EthAddress.fromHex "0x37Eed34FEdB7f396F8Fcf1ceE9969b9b49317b40"
+    var client = waitFor makeAnRpcClient("http://149.28.74.252:8545")
+    # var now = now().toTime()
+    # var sortedTx: seq[Transaction]
+    # if now < ctx.txPool.startDate + 3.seconds:
+      # ctx.txPool.addTxs txs
+      # for (account,nonceList) in ctx.txPool.txDB.packingOrderAccounts(txItemPending):
+      #   sortedTx.add toSeq(nonceList.incNonce).mapIt(it.tx)
+    # else:
     for tx in txs:
-      var txItem = TxItemRef.new(tx, tx.itemID, txItemPending, "").get()
-      var res = vmState.processTransaction(tx, txItem.sender, header)
-      if res.isOk:
-        info "handleAnnouncedTxs",  itemId = tx.itemID, gas=res.get()
-      else:
-        info "handleAnnouncedTxs", err=res.error()
+      var sender = tx.getSender()
+      let (acc, accProof, storageProofs) = waitFor fetchAccountAndSlots(client, sender, @[], header.blockNumber)
+
+      var accBalance = acc.balance
+
+      var balance1 = vmState.stateDB.getBalance(sender)
+      let accTx = vmState.stateDB.beginSavepoint
+      let gasBurned = tx.txCallEvm(sender, vmState, fork)
+      
+      vmState.stateDB.commit(accTx)
+      var balance2 = vmState.stateDB.getBalance(sender)
+      info "txCallEvm", txHash = tx.rlpHash, gasBurned=gasBurned, sender=sender, nonce=tx.nonce, gasPrice=tx.gasPrice, gasLimit=tx.gasLimit, accBalance=accBalance, balance1=balance1, balance2=balance2
+      populateDbWithBranch(ctx.db.db, accProof)
+      for index, storageProof in storageProofs:
+        echo "index:", index
+        let slot: UInt256 = storageProof.key
+        let fetchedVal: UInt256 = storageProof.value
+        let storageMptNodes: seq[seq[byte]] = storageProof.proof.mapIt(distinctBase(it))
+        let storageVerificationRes = verifyFetchedSlot(acc.storageRoot, slot, fetchedVal, storageMptNodes)
+        let whatAreWeVerifying = ("storage proof", sender, acc, slot, fetchedVal)
+        raiseExceptionIfError(whatAreWeVerifying, storageVerificationRes)
+
+        populateDbWithBranch(ctx.db.db, storageMptNodes)
+        let slotAsKey = createTrieKeyFromSlot(slot)
+        let slotHash = keccakHash(slotAsKey)
+        let slotEncoded = rlp.encode(slot)
+        ctx.db.db.put(slotHashToSlotKey(slotHash.data).toOpenArray, slotEncoded)
+    
   except:
     echo getCurrentExceptionMsg()
 
@@ -537,7 +577,12 @@ method handleNewBlock*(ctx: EthWireRef, peer: Peer, blk: EthBlock, totalDifficul
   #     blockHash=blk.header.blockHash, totalDifficulty
   #   asyncSpawn banPeer(ctx.peerPool, peer, PEER_LONG_BANTIME)
   #   return
+  info "handleNewBlock", peer=peer, blk=blk, totalDifficulty=totalDifficulty
 
+  let res = ctx.chain.persistBlocks([blk.header], [BlockBody(transactions: blk.txs, uncles: blk.uncles)])
+  if res == ValidationResult.Error:
+      error "handleNewBlock: persistBlocks error"
+      return
   if not ctx.newBlockHandler.handler.isNil:
     ctx.newBlockHandler.handler(ctx.newBlockHandler.arg, peer, blk, totalDifficulty)
 

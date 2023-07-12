@@ -143,7 +143,7 @@ p2pProtocol eth66(version = ethVersion,
   # User message 0x02: Transactions.
   proc transactions(peer: Peer, transactions: openArray[Transaction]) =
     when trEthTraceGossipOk:
-      info trEthRecvReceived & "Transactions (0x02)", peer, transactions=transactions.mapIt(it.itemID())
+      trace trEthRecvReceived & "Transactions (0x02)", peer, transactions=transactions.mapIt(it.itemID())
 
     let ctx = peer.networkState()
     ctx.handleAnnouncedTxs(peer, transactions)
@@ -216,7 +216,7 @@ p2pProtocol eth66(version = ethVersion,
   # User message 0x08: NewPooledTransactionHashes.
   proc newPooledTransactionHashes(peer: Peer, txHashes: openArray[Hash256]) =
     when trEthTraceGossipOk:
-      info trEthRecvReceived & "NewPooledTransactionHashes (0x08)", peer, hashes=txHashes.len
+      trace trEthRecvReceived & "NewPooledTransactionHashes (0x08)", peer, hashes=txHashes.len
 
     let ctx = peer.networkState()
     ctx.handleAnnouncedTxsHashes(peer, txHashes)

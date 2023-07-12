@@ -19,7 +19,7 @@ export
   vmp.ecRecover,
   vmp.execPrecompiles,
   vmp.identity,
-  vmp.modExp,
+  # vmp.modExp,
   vmp.ripemd160,
   vmp.sha256,
   vmp.simpleDecode

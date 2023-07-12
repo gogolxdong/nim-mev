@@ -356,26 +356,19 @@ proc setAsCanonicalChainHead(db: ChainDBRef; headerHash: Hash256): seq[BlockHead
   return newCanonicalHeaders
 
 proc headerExists*(db: ChainDBRef; blockHash: Hash256): bool =
-  ## Returns True if the header with the given block hash is in our DB.
-  echo "headerExists"
   db.db.contains(genericHashKey(blockHash).toOpenArray)
 
 proc markCanonicalChain(db: ChainDBRef, header: BlockHeader, headerHash: Hash256): bool =
-  ## mark this chain as canonical by adding block number to hash lookup
-  ## down to forking point
   var
     currHash = headerHash
     currHeader = header
 
-  # mark current header as canonical
   let key = blockNumberToHashKey(currHeader.blockNumber)
   db.db.put(key.toOpenArray, rlp.encode(currHash))
 
-  # it is a genesis block, done
   if currHeader.parentHash == Hash256():
     return true
 
-  # mark ancestor blocks as canonical too
   currHash = currHeader.parentHash
   if not db.getBlockHeader(currHeader.parentHash, currHeader):
     return false
@@ -384,13 +377,10 @@ proc markCanonicalChain(db: ChainDBRef, header: BlockHeader, headerHash: Hash256
     let key = blockNumberToHashKey(currHeader.blockNumber)
     let data = db.db.get(key.toOpenArray)
     if data.len == 0:
-      # not marked, mark it
       db.db.put(key.toOpenArray, rlp.encode(currHash))
     elif rlp.decode(data, Hash256) != currHash:
-      # replace prev chain
       db.db.put(key.toOpenArray, rlp.encode(currHash))
     else:
-      # forking point, done
       break
 
     if currHeader.parentHash == Hash256():

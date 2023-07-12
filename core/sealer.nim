@@ -168,13 +168,12 @@ proc generateExecutionPayload*(engine: SealingEngineRef,
   pos.timestamp    = fromUnix(payloadAttrs.timestamp.unsafeQuantityToInt64)
   pos.feeRecipient = EthAddress payloadAttrs.suggestedFeeRecipient
 
-  when payloadAttrs is PayloadAttributesV2:
-    engine.txPool.withdrawals = payloadAttrs.withdrawals.toWithdrawals
-  else:
-    engine.txPool.withdrawals = @[]
+  # when payloadAttrs is PayloadAttributesV2:
+  #   engine.txPool.withdrawals = payloadAttrs.withdrawals.toWithdrawals
+  # else:
+  #   engine.txPool.withdrawals = @[]
 
   if headBlock.blockHash != engine.txPool.head.blockHash:
-    # reorg
     discard engine.txPool.smartHead(headBlock)
 
   var blk: EthBlock
@@ -183,8 +182,6 @@ proc generateExecutionPayload*(engine: SealingEngineRef,
     error "sealing engine generateBlock error", msg = res.error
     return err(res.error)
 
-  # make sure both generated block header and payloadRes(ExecutionPayloadV2)
-  # produce the same blockHash
   blk.header.fee = some(blk.header.fee.get(UInt256.zero)) # force it with some(UInt256)
 
   let blockHash = rlpHash(blk.header)
@@ -236,14 +233,12 @@ proc new*(_: type SealingEngineRef,
   )
 
 proc start*(engine: SealingEngineRef) =
-  ## Starts sealing engine.
   if engine.state == EngineStopped:
     engine.state = EngineRunning
     engine.engineLoop = sealingLoop(engine)
     info "sealing engine started"
 
 proc stop*(engine: SealingEngineRef) {.async.} =
-  ## Stop sealing engine from producing more blocks.
   if engine.state == EngineRunning:
     engine.state = EngineStopped
     await engine.engineLoop.cancelAndWait()

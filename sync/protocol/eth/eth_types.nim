@@ -57,6 +57,7 @@ method getBlockHeaders*(ctx: EthWireBase, req: BlocksRequest): seq[BlockHeader] 
   notImplemented("getBlockHeaders")
 
 method handleNewBlock*(ctx: EthWireBase, peer: Peer, blk: EthBlock, totalDifficulty: DifficultyInt) {.base, gcsafe, raises: [CatchableError].} =
+  info "handleNewBlock", peer=peer, blk=blk, totalDifficulty=totalDifficulty
   notImplemented("handleNewBlock")
 
 method handleAnnouncedTxs*(ctx: EthWireBase, peer: Peer, txs: openArray[Transaction]) {.base, gcsafe, raises: [CatchableError].} =

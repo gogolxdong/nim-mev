@@ -1028,7 +1028,7 @@ proc handleNewBlock(ctx: LegacySyncRef,
                     totalDifficulty: DifficultyInt) {.
                       gcsafe, raises: [CatchableError].} =
 
-  info trEthRecvNewBlock, number=blk.header.blockNumber, hash=short(blk.header.blockHash)
+  info trEthRecvNewBlock, number=blk.header.blockNumber, hash=short(blk.header.blockHash), blk=blk
 
   if ctx.lastCleanup - getTime() > CleanupInterval:
     ctx.cleanupKnownByPeer()
@@ -1045,7 +1045,7 @@ proc handleNewBlock(ctx: LegacySyncRef,
   let body = BlockBody(
     transactions: blk.txs,
     uncles: blk.uncles,
-    withdrawals: blk.withdrawals
+    # withdrawals: blk.withdrawals
   )
 
   if not ctx.validateHeader(blk.header, body):

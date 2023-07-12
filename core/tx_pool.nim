@@ -622,8 +622,8 @@ proc ethBlock*(xp: TxPoolRef): EthBlock
     result.txs.add toSeq(nonceList.incNonce).mapIt(it.tx)
 
   let com = xp.chain.com
-  if com.forkGTE(Shanghai):
-    result.withdrawals = some(xp.chain.withdrawals)
+  # if com.forkGTE(Shanghai):
+  #   result.withdrawals = some(xp.chain.withdrawals)
 
 proc gasCumulative*(xp: TxPoolRef): GasInt =
   ## Getter, retrieves the gas that will be burned in the block after

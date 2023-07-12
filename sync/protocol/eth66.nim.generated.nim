@@ -287,11 +287,11 @@ template status*(peer: Peer; ethVersionArg: uint; networkId: NetworkId;
                  totalDifficulty: DifficultyInt; bestHash: Hash256;
                  genesisHash: Hash256; forkId: ChainForkId;
                  timeout: Duration = milliseconds(10000'i64)): Future[statusObj] =
-  let peer_5502926941 = peer
+  let peer_5502926940 = peer
   let sendingFuture`gensym61 = statusRawSender(peer, ethVersionArg, networkId,
       totalDifficulty, bestHash, genesisHash, forkId)
-  handshakeImpl(peer_5502926941, sendingFuture`gensym61,
-                nextMsg(peer_5502926941, statusObj), timeout)
+  handshakeImpl(peer_5502926940, sendingFuture`gensym61,
+                nextMsg(peer_5502926940, statusObj), timeout)
 
 proc newBlockHashes*(peerOrResponder: Peer;
                      hashes: openArray[NewBlockHashesAnnounce]): Future[void] {.
@@ -561,8 +561,8 @@ proc transactionsUserHandler(peer: Peer; transactions: seq[Transaction]) {.
         eth66Protocol))
 
   when trEthTraceGossipOk:
-    info trEthRecvReceived & "Transactions (0x02)", peer,
-         transactions = transactions.mapIt(it.itemID())
+    trace trEthRecvReceived & "Transactions (0x02)", peer,
+          transactions = transactions.mapIt(it.itemID())
   let ctx = peer.networkState()
   ctx.handleAnnouncedTxs(peer, transactions)
 
@@ -662,8 +662,8 @@ proc newPooledTransactionHashesUserHandler(peer: Peer; txHashes: seq[Hash256]) {
         eth66Protocol))
 
   when trEthTraceGossipOk:
-    info trEthRecvReceived & "NewPooledTransactionHashes (0x08)", peer,
-         hashes = txHashes.len
+    trace trEthRecvReceived & "NewPooledTransactionHashes (0x08)", peer,
+          hashes = txHashes.len
   let ctx = peer.networkState()
   ctx.handleAnnouncedTxsHashes(peer, txHashes)
 

@@ -6,8 +6,8 @@ import
   ../errors, eth/[common, keys], chronicles,
   nimcrypto/[ripemd, sha2, utils], bncurve/[fields, groups],
   ../common/evmforks,
-  ../core/eip4844,
-  ./modexp
+  ../core/eip4844
+  # ./modexp
 
 
 type
@@ -235,52 +235,52 @@ proc modExpFee(c: Computation, baseLen, expLen, modLen: UInt256, fork: EVMFork):
   # if fork >= FkBerlin and result < 200.GasInt:
   #   result = 200.GasInt
 
-proc modExp*(c: Computation, fork: EVMFork) =
-  ## Modular exponentiation precompiled contract
-  ## Yellow Paper Appendix E
-  ## EIP-198 - https://github.com/ethereum/EIPs/blob/master/EIPS/eip-198.md
-  # Parsing the data
-  template data: untyped {.dirty.} =
-    c.msg.data
+# proc modExp*(c: Computation, fork: EVMFork) =
+#   ## Modular exponentiation precompiled contract
+#   ## Yellow Paper Appendix E
+#   ## EIP-198 - https://github.com/ethereum/EIPs/blob/master/EIPS/eip-198.md
+#   # Parsing the data
+#   template data: untyped {.dirty.} =
+#     c.msg.data
 
-  let # lengths Base, Exponent, Modulus
-    baseL = data.rangeToPadded[:UInt256](0, 31, 32)
-    expL  = data.rangeToPadded[:UInt256](32, 63, 32)
-    modL  = data.rangeToPadded[:UInt256](64, 95, 32)
-    baseLen = baseL.safeInt
-    expLen  = expL.safeInt
-    modLen  = modL.safeInt
+#   let # lengths Base, Exponent, Modulus
+#     baseL = data.rangeToPadded[:UInt256](0, 31, 32)
+#     expL  = data.rangeToPadded[:UInt256](32, 63, 32)
+#     modL  = data.rangeToPadded[:UInt256](64, 95, 32)
+#     baseLen = baseL.safeInt
+#     expLen  = expL.safeInt
+#     modLen  = modL.safeInt
 
-  let gasFee = modExpFee(c, baseL, expL, modL, fork)
-  c.gasMeter.consumeGas(gasFee, reason="ModExp Precompile")
+#   let gasFee = modExpFee(c, baseL, expL, modL, fork)
+#   c.gasMeter.consumeGas(gasFee, reason="ModExp Precompile")
 
-  if baseLen == 0 and modLen == 0:
-    # This is a special case where expLength can be very big.
-    c.output = @[]
-    return
+#   if baseLen == 0 and modLen == 0:
+#     # This is a special case where expLength can be very big.
+#     c.output = @[]
+#     return
 
-  const maxSize = int32.high.u256
-  if baseL > maxSize or expL > maxSize or modL > maxSize:
-    raise newException(EVMError, "The Nimbus VM doesn't support oversized modExp operand")
+#   const maxSize = int32.high.u256
+#   if baseL > maxSize or expL > maxSize or modL > maxSize:
+#     raise newException(EVMError, "The Nimbus VM doesn't support oversized modExp operand")
 
-  # TODO:
-  # add EVM special case:
-  # - modulo <= 1: return zero
-  # - exp == zero: return one
+#   # TODO:
+#   # add EVM special case:
+#   # - modulo <= 1: return zero
+#   # - exp == zero: return one
 
-  let output = modExp(
-    data.rangeToPadded(96, baseLen),
-    data.rangeToPadded(96 + baseLen, expLen),
-    data.rangeToPadded(96 + baseLen + expLen, modLen)
-  )
+#   let output = modExp(
+#     data.rangeToPadded(96, baseLen),
+#     data.rangeToPadded(96 + baseLen, expLen),
+#     data.rangeToPadded(96 + baseLen + expLen, modLen)
+#   )
 
-  # maximum output len is the same as modLen
-  # if it less than modLen, it will be zero padded at left
-  if output.len >= modLen:
-    c.output = @(output[^modLen..^1])
-  else:
-    c.output = newSeq[byte](modLen)
-    c.output[^output.len..^1] = output[0..^1]
+#   # maximum output len is the same as modLen
+#   # if it less than modLen, it will be zero padded at left
+#   if output.len >= modLen:
+#     c.output = @(output[^modLen..^1])
+#   else:
+#     c.output = newSeq[byte](modLen)
+#     c.output[^output.len..^1] = output[0..^1]
 
 proc bn256ecAdd*(computation: Computation, fork: EVMFork) =
   let gasFee =  GasECAddIstanbul
@@ -692,7 +692,7 @@ proc execPrecompiles*(computation: Computation, fork: EVMFork): bool {.inline.} 
       of paSha256: sha256(computation)
       of paRipeMd160: ripemd160(computation)
       of paIdentity: identity(computation)
-      of paModExp: modExp(computation, fork)
+      # of paModExp: modExp(computation, fork)
       of paEcAdd: bn256ecAdd(computation, fork)
       of paEcMul: bn256ecMul(computation, fork)
       of paPairing: bn256ecPairing(computation, fork)
