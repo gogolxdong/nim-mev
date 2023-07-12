@@ -23,6 +23,7 @@ requires "nim >= 1.9.0",
   "https://github.com/gogolxdong/nim-web3",
   "blscurve",
   "json_rpc",
-  "bncurve"
+  "bncurve",
+  "lmdb"
 
 binDir = "build"

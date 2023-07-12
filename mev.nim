@@ -9,8 +9,10 @@ import ./evm/[evmc_api,types, state]
 import ./core/chain/chain_desc, ./core/tx_pool
 import ./sync/handlers/setup
 import ./sync/[handlers,legacy]
-import lmdb
+# import lmdb
+import rocksdb
 import sequtils
+import ./config
 
 template toa(a, b, c: untyped): untyped =
   toOpenArray((a), (b), (b) + (c) - 1)
@@ -23,9 +25,9 @@ var nextPort = Port 30312
 # var node4 = ENode.fromString("enode://22f27e4df6e569cce7bfca6c8c0d5a1f49a608a50dd34ee9eb79c8c9fcb8afda012595794db4a0a4d51ca9f26c33ad19c7602177ed438043571924641a3d3783@144.202.109.99:30311").get
 var node5 = ENode.fromString("enode://c641e6b3cb4754e3a0a2d85175f49df45febf9b164dea29e76a94e704dd542343fbd861b0c251cf7c72f38a436eb9f250832f80c22d3aaf3d755a6264f1c85d3@149.28.74.252:30311").get
 
-var pk = PrivateKey.fromHex("0x21e4a26d7699c1db44cfd6303c8f969c3ab6c9e31bdc13d3ad5bfda7a180c9a5").get
+var pk = PrivateKey.fromHex(readFile("key")).get
 
-proc setupTestNode*(rng: ref HmacDrbgContext, capabilities: varargs[ProtocolInfo, `protocolInfo`]): EthereumNode {.gcsafe.} =
+proc setupNode*(rng: ref HmacDrbgContext, capabilities: varargs[ProtocolInfo, `protocolInfo`]): EthereumNode {.gcsafe.} =
   {.gcsafe.}:
     var bootstrapNodes = BSCBootnodes.mapIt(ENode.fromString(it).get)
     result = newEthereumNode(pk.toKeyPair, 
@@ -37,22 +39,21 @@ proc setupTestNode*(rng: ref HmacDrbgContext, capabilities: varargs[ProtocolInfo
       bindTcpPort = nextPort,
       rng = rng)
 
-    var dbBackend = newChainDB()
+    var dbBackend = newChainDB(getCurrentDir() / ".rocksdb")
     let trieDB = trieDB dbBackend
-    let comm = CommonRef.new(trieDB, pruneTrie=true, BSC, networkParams(BSC))
+    let comm = CommonRef.new(trieDB, pruneTrie=false, config.BSC, networkParams(config.BSC))
     comm.initializeEmptyDb()
     var chain = comm.newChain()
     var txPool = TxPoolRef.new(comm, pk.toPublicKey.toCanonicalAddress)   
 
     for capability in capabilities:
-      echo capability.name
-      result.addCapability capability #, EthWireRef.new(chain, txPool, result.peerPool)
+      result.addCapability capability , EthWireRef.new(chain, txPool, result.peerPool)
 
     # var legaSyncRef = LegacySyncRef.new(result, chain)
     # result.setEthHandlerNewBlocksAndHashes(legacy.newBlockHandler, legacy.newBlockHashesHandler, cast[pointer](legaSyncRef))
 
 var rng = newRng()
-var node = setupTestNode(rng, eth )
+var node = setupNode(rng, eth )
 var peer:Peer
 
 proc startNode() =

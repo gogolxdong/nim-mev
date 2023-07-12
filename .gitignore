@@ -2,3 +2,5 @@ mev
 p2p
 .lmdb
 *test*
+.rocksdb
+key

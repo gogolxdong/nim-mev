@@ -177,10 +177,10 @@ proc reinit*(self:      BaseVMState; ## Object descriptor
   ## `header.parentHash`, is used to fetch the `parent` BlockHeader to be
   ## used in the `update()` variant, above.
   var parent: BlockHeader
-  if self.com.db.getBlockHeader(header.parentHash, parent):
-    return self.reinit(
-      parent    = parent,
-      header    = header)
+  # if self.com.db.getBlockHeader(header.parentHash, parent):
+  return self.reinit(
+    parent    = parent,
+    header    = header)
 
 proc init*(
       self:        BaseVMState;     ## Object descriptor
@@ -251,13 +251,13 @@ proc init*(
   ## Variant of `new()` which does not throw an exception on a dangling
   ## `BlockHeader` parent hash reference.
   var parent: BlockHeader
-  if com.db.getBlockHeader(header.parentHash, parent):
-    vmState.init(
-      parent      = parent,
-      header      = header,
-      com         = com,
-      tracerFlags = tracerFlags)
-    return true
+  # if com.db.getBlockHeader(header.parentHash, parent):
+  vmState.init(
+    parent      = parent,
+    header      = header,
+    com         = com,
+    tracerFlags = tracerFlags)
+  return true
 
 proc statelessInit*(
     vmState:      BaseVMState;

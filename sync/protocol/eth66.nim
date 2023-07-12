@@ -205,10 +205,7 @@ p2pProtocol eth66(version = ethVersion,
     # (Note, needs to use `EthBlock` instead of its alias `NewBlockAnnounce`
     # because either `p2pProtocol` or RLPx doesn't work with an alias.)
     when trEthTraceGossipOk:
-      info trEthRecvReceived & "NewBlock (0x07)", peer,
-        totalDifficulty,
-        blockNumber = blk.header.blockNumber,
-        blockDifficulty = blk.header.difficulty
+      info trEthRecvReceived & "NewBlock (0x07)", peer, totalDifficulty, blockNumber = blk.header.blockNumber, blockHash=blk.header.blockHash
 
     let ctx = peer.networkState()
     ctx.handleNewBlock(peer, blk, totalDifficulty)

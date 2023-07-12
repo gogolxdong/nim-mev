@@ -44,7 +44,7 @@ proc initChain(c: ChainRef; com: CommonRef; extraValidation: bool) =
   ## Constructor for the `Chain` descriptor object.
   c.com = com
 
-  c.validateBlock = true
+  c.validateBlock = false
   c.extraValidation = extraValidation
 
 # ------------------------------------------------------------------------------

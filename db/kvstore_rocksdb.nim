@@ -24,7 +24,6 @@ proc put*(db: RocksStoreRef, key, value: openArray[byte]): KvResult[void] =
   db.store.put(key, value)
 
 proc contains*(db: RocksStoreRef, key: openArray[byte]): KvResult[bool] =
-  echo "kvstore_rocksdb contains"
   db.store.contains(key)
 
 proc del*(db: RocksStoreRef, key: openArray[byte]): KvResult[bool] =
@@ -36,9 +35,7 @@ proc clear*(db: RocksStoreRef): KvResult[bool] =
 proc close*(db: RocksStoreRef) =
   db.store.close
 
-proc init*(
-    T: type RocksStoreRef, basePath: string, name: string,
-    readOnly = false): KvResult[T] =
+proc init*(T: type RocksStoreRef, basePath: string, name: string,readOnly = false): KvResult[T] =
   let
     dataDir = basePath / name / "data"
     # tmpDir = basePath / name / "tmp" -- notused
@@ -51,8 +48,7 @@ proc init*(
     return err("rocksdb: cannot create database directory")
 
   var store: RocksDBInstance
-  if (let v = store.init(
-      dataDir, backupsDir, readOnly, maxOpenFiles = maxOpenFiles); v.isErr):
+  if (let v = store.init(dataDir, backupsDir, readOnly, maxOpenFiles = maxOpenFiles); v.isErr):
     return err(v.error)
 
   ok(T(store: store))

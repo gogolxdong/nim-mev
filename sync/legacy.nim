@@ -1022,13 +1022,9 @@ proc handleNewBlockHashes(ctx: LegacySyncRef,
     let peer = ctx.randomTrustedPeer()
     ctx.startSyncWithPeer(peer)
 
-proc handleNewBlock(ctx: LegacySyncRef,
-                    peer: Peer,
-                    blk: EthBlock,
-                    totalDifficulty: DifficultyInt) {.
-                      gcsafe, raises: [CatchableError].} =
+proc handleNewBlock(ctx: LegacySyncRef, peer: Peer, blk: EthBlock, totalDifficulty: DifficultyInt) {. gcsafe, raises: [CatchableError].} =
 
-  info trEthRecvNewBlock, number=blk.header.blockNumber, hash=short(blk.header.blockHash), blk=blk
+  info trEthRecvNewBlock, number=blk.header.blockNumber, hash=short(blk.header.blockHash)
 
   if ctx.lastCleanup - getTime() > CleanupInterval:
     ctx.cleanupKnownByPeer()

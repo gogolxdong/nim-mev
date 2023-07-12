@@ -151,6 +151,7 @@ proc verifyCascadingFields(c: Clique; com: CommonRef; header: BlockHeader;
     return ok()
 
   # Ensure that the block's timestamp isn't too close to its parent
+  info "verifyCascadingFields"
   var parent: BlockHeader
   if 0 < parents.len:
     parent = parents[^1]

@@ -256,7 +256,8 @@ proc sendTransactions(ctx: EthWireRef,
     debug "Exception in sendTransactions", exc = e.name, err = e.msg
 
 proc fetchTransactions(ctx: EthWireRef, reqHashes: seq[Hash256], peer: Peer): Future[void] {.async.} =
-  info "fetchTx: requesting txs", number = reqHashes.len
+  discard
+  # info "fetchTx: requesting txs", number = reqHashes.len
 
   # try:
 
@@ -462,8 +463,6 @@ method handleAnnouncedTxs*(ctx: EthWireRef, peer: Peer, txs: openArray[Transacti
   if txs.len == 0:
     return
 
-  info "received new transactions", number = txs.len
-
   try:
     let header = ctx.chain.currentBlock()
     # info "handleAnnouncedTxs", parentHash=header.parentHash, headerHash=header.blockHash, txs=txs.len
@@ -563,7 +562,7 @@ method handleAnnouncedTxsHashes*(ctx: EthWireRef, peer: Peer, txHashes: openArra
   if reqHashes.len == 0:
     return
 
-  info "handleAnnouncedTxsHashes: received new tx hashes", number = reqHashes.len
+  debug "handleAnnouncedTxsHashes: received new tx hashes", number = reqHashes.len
 
   for txHash in reqHashes:
     ctx.pending.incl txHash
@@ -577,12 +576,16 @@ method handleNewBlock*(ctx: EthWireRef, peer: Peer, blk: EthBlock, totalDifficul
   #     blockHash=blk.header.blockHash, totalDifficulty
   #   asyncSpawn banPeer(ctx.peerPool, peer, PEER_LONG_BANTIME)
   #   return
-  info "handleNewBlock", peer=peer, blk=blk, totalDifficulty=totalDifficulty
-
-  let res = ctx.chain.persistBlocks([blk.header], [BlockBody(transactions: blk.txs, uncles: blk.uncles)])
+  let body = BlockBody(transactions: blk.txs, uncles: blk.uncles)
+  var res = ctx.chain.persistBlocks([blk.header], [body])
   if res == ValidationResult.Error:
       error "handleNewBlock: persistBlocks error"
       return
+  res = ctx.chain.setCanonical(blk.header)
+  if res == ValidationResult.Error:
+    error "setCanonical", err=res
+    return
+  info "handleNewBlock", peer=peer, blk=blk.header.blockNumber, totalDifficulty=totalDifficulty
   if not ctx.newBlockHandler.handler.isNil:
     ctx.newBlockHandler.handler(ctx.newBlockHandler.arg, peer, blk, totalDifficulty)
 

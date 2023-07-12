@@ -287,11 +287,11 @@ template status*(peer: Peer; ethVersionArg: uint; networkId: NetworkId;
                  totalDifficulty: DifficultyInt; bestHash: Hash256;
                  genesisHash: Hash256; forkId: ChainForkId;
                  timeout: Duration = milliseconds(10000'i64)): Future[statusObj] =
-  let peer_5502926940 = peer
+  let peer_5469372509 = peer
   let sendingFuture`gensym61 = statusRawSender(peer, ethVersionArg, networkId,
       totalDifficulty, bestHash, genesisHash, forkId)
-  handshakeImpl(peer_5502926940, sendingFuture`gensym61,
-                nextMsg(peer_5502926940, statusObj), timeout)
+  handshakeImpl(peer_5469372509, sendingFuture`gensym61,
+                nextMsg(peer_5469372509, statusObj), timeout)
 
 proc newBlockHashes*(peerOrResponder: Peer;
                      hashes: openArray[NewBlockHashesAnnounce]): Future[void] {.
@@ -643,8 +643,7 @@ proc newBlockUserHandler(peer: Peer; blk: EthBlock;
 
   when trEthTraceGossipOk:
     info trEthRecvReceived & "NewBlock (0x07)", peer, totalDifficulty,
-         blockNumber = blk.header.blockNumber,
-         blockDifficulty = blk.header.difficulty
+         blockNumber = blk.header.blockNumber, blockHash = blk.header.blockHash
   let ctx = peer.networkState()
   ctx.handleNewBlock(peer, blk, totalDifficulty)
 

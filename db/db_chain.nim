@@ -53,7 +53,7 @@ proc exists*(db: ChainDBRef, hash: Hash256): bool =
 
 proc getBlockHeader*(db: ChainDBRef; blockHash: Hash256, output: var BlockHeader): bool =
   var hashKey = genericHashKey(blockHash)
-  info "getBlockHeader", blockHash=blockHash, hashKey=hashKey
+  # info "getBlockHeader", blockHash=blockHash, hashKey=hashKey
   let data = db.db.get(hashKey.toOpenArray)
 
   if data.len != 0:
@@ -75,7 +75,6 @@ proc getBlockHeader*(db: ChainDBRef, blockHash: Hash256): BlockHeader =
 
 proc getHash(db: ChainDBRef, key: DbKey, output: var Hash256): bool {.inline.} =
   let data = db.db.get(key.toOpenArray)
-  info "getHash", key=key, data=data
   if data.len != 0:
     output = rlp.decode(data, Hash256)
     result = true
@@ -83,13 +82,13 @@ proc getHash(db: ChainDBRef, key: DbKey, output: var Hash256): bool {.inline.} =
 proc getCanonicalHead*(db: ChainDBRef): BlockHeader =
   var headHash: Hash256
   var hashKey = canonicalHeadHashKey()
-  info "getCanonicalHead", hashKey=hashKey.toOpenArray
+  # info "getCanonicalHead", hashKey=hashKey.toOpenArray
   
   var gotHash = db.getHash(hashKey, headHash)
   info "getCanonicalHead", headHash=headHash
 
   var gotHeader = db.getBlockHeader(headHash, result)
-  info "getCanonicalHead", header=result
+  # info "getCanonicalHead", header=result
 
   if not gotHash  or not gotHeader:
     raise newException(CanonicalHeadNotFound, "No canonical head set for this chain")
@@ -138,7 +137,7 @@ proc getBlockHeader*(db: ChainDBRef; n: BlockNumber): BlockHeader =
   db.getBlockHeader(db.getBlockHash(n))
 
 proc getScore*(db: ChainDBRef; blockHash: Hash256): UInt256 =
-  info "getScore", blockHash=blockHash
+  # info "getScore", blockHash=blockHash
   rlp.decode(db.db.get(blockHashToScoreKey(blockHash).toOpenArray), UInt256)
 
 proc setScore*(db: ChainDBRef; blockHash: Hash256, score: UInt256) =
@@ -191,7 +190,7 @@ iterator findNewAncestors(db: ChainDBRef; header: BlockHeader): BlockHeader =
       h = db.getBlockHeader(h.parentHash)
 
 proc addBlockNumberToHashLookup*(db: ChainDBRef; header: BlockHeader) =
-  info "addBlockNumberToHashLookup"
+  # info "addBlockNumberToHashLookup"
   db.db.put(blockNumberToHashKey(header.blockNumber).toOpenArray, rlp.encode(header.hash))
 
 proc persistTransactions*(db: ChainDBRef, blockNumber:
@@ -443,12 +442,12 @@ proc persistHeaderToDb*(db: ChainDBRef;header: BlockHeader;forceCanonical: bool;
   if not isStartOfHistory and not db.headerExists(header.parentHash):
     raise newException(ParentNotFound, "Cannot persist block header " & $headerHash & " with unknown parent " & $header.parentHash)
   var headerHashKey = genericHashKey(headerHash)
-  info "persistHeaderToDb", headerHashKey=headerHashKey,headerHash=headerHash
+  # info "persistHeaderToDb", headerHashKey=headerHashKey,headerHash=headerHash
   db.db.put(headerHashKey.toOpenArray, rlp.encode(header))
 
   let score = if isStartOfHistory: header.difficulty else: db.getScore(header.parentHash) + header.difficulty
   var blockHashScoreKey = blockHashToScoreKey(headerHash)
-  info "persistHeaderToDb", blockHash=blockHashScoreKey, score=score
+  # info "persistHeaderToDb", blockHash=blockHashScoreKey, score=score
   db.db.put(blockHashScoreKey.toOpenArray, rlp.encode(score))
 
   db.addBlockNumberToHashLookup(header)
@@ -456,7 +455,7 @@ proc persistHeaderToDb*(db: ChainDBRef;header: BlockHeader;forceCanonical: bool;
   var headScore: UInt256
   try:
     var headHash = db.getCanonicalHead().hash
-    info "persistHeaderToDb", headHash=headHash
+    # info "persistHeaderToDb", headHash=headHash
     headScore = db.getScore(headHash)
   except CanonicalHeadNotFound:
     return db.setAsCanonicalChainHead(headerHash)
