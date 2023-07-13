@@ -1,7 +1,7 @@
 --hints:off
 --warnings:off
 --deepcopy:on
---gc:orc
+--gc:arc
 --define:release
 --define:legacy_eth66_enabled
 --define:chronicles_runtime_filtering
