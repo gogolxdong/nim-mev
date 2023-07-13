@@ -37,7 +37,7 @@ type
     ## Combined table for caching data to be stored/updated
 
 const
-  BaseFolder* = "nimbus"         # Same as for Legacy DB has "backups"
+  BaseFolder* = "nimmev"         # Same as for Legacy DB has "backups"
   DataFolder* = "aristo"         # Legacy DB has "data"
   BackupFolder* = "history"      # Legacy DB has "backups"
   TempFolder* = "tmp"            # Not used with legacy DB

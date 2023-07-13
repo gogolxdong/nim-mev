@@ -1,3 +1,10 @@
+# Copyright (c) 2018-2022 Status Research & Development GmbH
+# Licensed under either of
+#  * Apache License, version 2.0, ([LICENSE-APACHE](LICENSE-APACHE))
+#  * MIT license ([LICENSE-MIT](LICENSE-MIT))
+# at your option.
+# This file may not be copied, modified, or distributed except according to
+# those terms.
 
 {.push raises: [].}
 
@@ -17,27 +24,36 @@ import
     confutils/std/net
   ],
   stew/shims/net as stewNet,
-  eth/[common, net/nat, p2p/bootnodes, p2p/enode],
-  ./constants
-  
+  eth/[common, net/nat, p2p/bootnodes, p2p/enode, p2p/discoveryv5/enr],
+  "."/[db/select_backend,
+    constants, vm_compile_info, version
+  ],
+  common/chain_config
+
 export stewNet
 
 const
+  # TODO: fix this agent-string format to match other
+  # eth clients format
   NimbusIdent* = "$# v$# [$#: $#, $#, $#, $#]" % [
-    "nimmev",
-    "0.1",
+    NimbusName,
+    NimbusVersion,
     hostOS,
     hostCPU,
-    "db",
-    "0.1",
-    "0.1"
+    nimbus_db_backend,
+    VmName,
+    GitRevision
   ]
 
 let
+  # e.g.: Copyright (c) 2018-2021 Status Research & Development GmbH
   NimbusCopyright* = "Copyright (c) 2018-" &
     $(now().utc.year) &
     " Status Research & Development GmbH"
 
+  # e.g.:
+  # Nimbus v0.1.0 [windows: amd64, rocksdb, evmc, dda8914f]
+  # Copyright (c) 2018-2021 Status Research & Development GmbH
   NimbusBuild* = "$#\p$#" % [
     NimbusIdent,
     NimbusCopyright,
@@ -45,16 +61,16 @@ let
 
   NimbusHeader* = "$#\p\p$#" % [
     NimbusBuild,
-    "latest"
+    version.NimVersion
   ]
 
 proc defaultDataDir*(): string =
   when defined(windows):
-    getHomeDir() / "AppData" / "Roaming" / "Nimbus"
+    getHomeDir() / "AppData" / "Roaming" / "Nimmev"
   elif defined(macosx):
-    getHomeDir() / "Library" / "Application Support" / "Nimbus"
+    getHomeDir() / "Library" / "Application Support" / "Nimmev"
   else:
-    getHomeDir() / ".cache" / "nimbus"
+    getHomeDir() / ".cache" / "nimmev"
 
 proc defaultKeystoreDir*(): string =
   defaultDataDir() / "keystore"
@@ -82,7 +98,8 @@ const
   defaultAdminListenAddressDesc = $defaultAdminListenAddress & ", meaning local host only"
   logLevelDesc = getLogLevels()
 
-
+# `when` around an option doesn't work with confutils; it fails to compile.
+# Workaround that by setting the `ignore` pragma on EVMC-specific options.
 when defined(evmc_enabled):
   {.pragma: includeIfEvmc.}
 else:
@@ -98,15 +115,15 @@ type
     Full
     Archive
 
-  NimbusCmd* {.pure.} = enum
+  NimmevCmd* {.pure.} = enum
     noCommand
     `import`
 
   ProtocolFlag* {.pure.} = enum
     ## Protocol flags
     Eth                           ## enable eth subprotocol
-    Snap                          ## enable snap sub-protocol
-    Les                           ## enable les subprotocol
+    # Snap                          ## enable snap sub-protocol
+    # Les                           ## enable les subprotocol
 
   RpcFlag* {.pure.} = enum
     ## RPC flags
@@ -121,10 +138,10 @@ type
   SyncMode* {.pure.} = enum
     Default
     Full                          ## Beware, experimental
-    Snap                          ## Beware, experimental
+    # Snap                          ## Beware, experimental
     Stateless                     ## Beware, experimental
 
-  NimbusConf* = object of RootObj
+  NimmevConf* = object of RootObj
     ## Main Nimbus configuration object
 
     dataDir* {.
@@ -209,10 +226,21 @@ type
       abbr: "i"
       name: "network" }: string
 
+    customNetwork {.
+      desc: "Use custom genesis block for private Ethereum Network (as /path/to/genesis.json)"
+      defaultValueDesc: ""
+      abbr: "c"
+      name: "custom-network" }: Option[NetworkParams]
+
     networkId* {.
       ignore # this field is not processed by confutils
       defaultValue: MainNet # the defaultValue value is set by `makeConfig`
       name: "network-id"}: NetworkId
+
+    networkParams* {.
+      ignore # this field is not processed by confutils
+      defaultValue: NetworkParams() # the defaultValue value is set by `makeConfig`
+      name: "network-params"}: NetworkParams
 
     logLevel* {.
       separator: "\pLOGGING AND DEBUGGING OPTIONS:"
@@ -250,6 +278,12 @@ type
       defaultValue: ""
       name: "bootstrap-file" }: InputFile
 
+    bootstrapEnrs {.
+      desc: "ENR URI of node to bootstrap discovery from. Argument may be repeated"
+      defaultValue: @[]
+      defaultValueDesc: ""
+      name: "bootstrap-enr" }: seq[enr.Record]
+
     staticPeers {.
       desc: "Connect to one or more trusted peers(as enode URL)"
       defaultValue: @[]
@@ -262,6 +296,12 @@ type
             "the file contents will replace the --staticPeers list"
       defaultValue: ""
       name: "static-peers-file" }: InputFile
+
+    staticPeersEnrs {.
+      desc: "ENR URI of node to connect to as trusted peer. Argument may be repeated"
+      defaultValue: @[]
+      defaultValueDesc: ""
+      name: "static-peer-enr" }: seq[enr.Record]
 
     reconnectMaxRetry* {.
       desc: "Specifies max number of retries if static peers disconnected/not connected. " &
@@ -338,7 +378,7 @@ type
 
     case cmd* {.
       command
-      defaultValue: NimbusCmd.noCommand }: NimbusCmd
+      defaultValue: NimmevCmd.noCommand }: NimmevCmd
 
     of noCommand:
       rpcEnabled* {.
@@ -513,6 +553,13 @@ proc parseCmdArg(T: type EthAddress, p: string): T
 proc completeCmdArg(T: type EthAddress, val: string): seq[string] =
   return @[]
 
+proc parseCmdArg*(T: type enr.Record, p: string): T {.raises: [ValueError].} =
+  if not fromURI(result, p):
+    raise newException(ValueError, "Invalid ENR")
+
+proc completeCmdArg*(T: type enr.Record, val: string): seq[string] =
+  return @[]
+
 proc processList(v: string, o: var seq[string])
     =
   ## Process comma-separated list of strings.
@@ -521,11 +568,21 @@ proc processList(v: string, o: var seq[string])
       if len(n) > 0:
         o.add(n)
 
-proc setBootnodes(output: var seq[ENode], nodeUris: openArray[string])
-    {.gcsafe, raises: [CatchableError].} =
+proc parseCmdArg(T: type NetworkParams, p: string): T
+    {.gcsafe, raises: [ValueError].} =
+  try:
+    if not loadNetworkParams(p, result):
+      raise newException(ValueError, "failed to load customNetwork")
+  except CatchableError:
+    raise newException(ValueError, "failed to load customNetwork")
+
+proc completeCmdArg(T: type NetworkParams, val: string): seq[string] =
+  return @[]
+
+proc setBootnodes(output: var seq[ENode], nodeUris: openArray[string]) =
   output = newSeqOfCap[ENode](nodeUris.len)
   for item in nodeUris:
-    output.add(ENode.fromString(item).tryGet())
+    output.add(ENode.fromString(item).expect("valid hardcoded ENode"))
 
 iterator repeatingList(listOfList: openArray[string]): string
     =
@@ -585,17 +642,7 @@ proc loadBootstrapFile(fileName: string, output: var seq[ENode]) =
 proc loadStaticPeersFile(fileName: string, output: var seq[ENode]) =
   fileName.loadEnodeFile(output, "static peers")
 
-const
-  CustomNet*  = 0.NetworkId
-  MainNet*    = 1.NetworkId
-  RopstenNet* = 3.NetworkId
-  RinkebyNet* = 4.NetworkId
-  GoerliNet*  = 5.NetworkId
-  KovanNet*   = 42.NetworkId
-  SepoliaNet* = 11155111.NetworkId
-  BSC* = 56.NetworkId
-
-proc getNetworkId(conf: NimbusConf): Option[NetworkId] =
+proc getNetworkId(conf: NimmevConf): Option[NetworkId] =
   if conf.network.len == 0:
     return none NetworkId
 
@@ -607,7 +654,6 @@ proc getNetworkId(conf: NimbusConf): Option[NetworkId] =
   of "goerli" : return some GoerliNet
   of "kovan"  : return some KovanNet
   of "sepolia": return some SepoliaNet
-  of "bsc": return some BSC
   else:
     try:
       some parseInt(network).NetworkId
@@ -615,7 +661,7 @@ proc getNetworkId(conf: NimbusConf): Option[NetworkId] =
       error "Failed to parse network name or id", network
       quit QuitFailure
 
-proc getProtocolFlags*(conf: NimbusConf): set[ProtocolFlag] =
+proc getProtocolFlags*(conf: NimmevConf): set[ProtocolFlag] =
   if conf.protocols.len == 0:
     return {ProtocolFlag.Eth}
 
@@ -623,8 +669,8 @@ proc getProtocolFlags*(conf: NimbusConf): set[ProtocolFlag] =
   for item in repeatingList(conf.protocols):
     case item.toLowerAscii()
     of "eth": result.incl ProtocolFlag.Eth
-    of "les": result.incl ProtocolFlag.Les
-    of "snap": result.incl ProtocolFlag.Snap
+    # of "les": result.incl ProtocolFlag.Les
+    # of "snap": result.incl ProtocolFlag.Snap
     of "none": noneOk = true
     else:
       error "Unknown protocol", name=item
@@ -645,39 +691,105 @@ proc getRpcFlags(api: openArray[string]): set[RpcFlag] =
       error "Unknown RPC API: ", name=item
       quit QuitFailure
 
-proc getRpcFlags*(conf: NimbusConf): set[RpcFlag] =
+proc getRpcFlags*(conf: NimmevConf): set[RpcFlag] =
   getRpcFlags(conf.rpcApi)
 
-proc getWsFlags*(conf: NimbusConf): set[RpcFlag] =
+proc getWsFlags*(conf: NimmevConf): set[RpcFlag] =
   getRpcFlags(conf.wsApi)
 
-proc getBootNodes*(conf: NimbusConf): seq[ENode]
-    {.gcsafe, raises: [CatchableError].} =
-  result.setBootnodes(MainnetBootnodes)
+proc fromEnr*(T: type ENode, r: enr.Record): ENodeResult[ENode] =
+  let
+    # TODO: there must always be a public key, else no signature verification
+    # could have been done and no Record would exist here.
+    # TypedRecord should be reworked not to have public key as an option.
+    pk = r.get(PublicKey).get()
+    tr = r.toTypedRecord().expect("id in valid record")
+
+  if tr.ip.isNone():
+    return err(IncorrectIP)
+  if tr.udp.isNone():
+    return err(IncorrectDiscPort)
+  if tr.tcp.isNone():
+    return err(IncorrectPort)
+
+  ok(ENode(
+    pubkey: pk,
+    address: Address(
+      ip: ipv4(tr.ip.get()),
+      udpPort: Port(tr.udp.get()),
+      tcpPort: Port(tr.tcp.get())
+    )
+  ))
+
+proc getBootNodes*(conf: NimmevConf): seq[ENode] =
+  var bootstrapNodes: seq[ENode]
+  # Ignore standard bootnodes if customNetwork is loaded
+  if conf.customNetwork.isNone:
+    case conf.networkId
+    of MainNet:
+      bootstrapNodes.setBootnodes(MainnetBootnodes)
+    of RopstenNet:
+      bootstrapNodes.setBootnodes(RopstenBootnodes)
+    of RinkebyNet:
+      bootstrapNodes.setBootnodes(RinkebyBootnodes)
+    of GoerliNet:
+      bootstrapNodes.setBootnodes(GoerliBootnodes)
+    of KovanNet:
+      bootstrapNodes.setBootnodes(KovanBootnodes)
+    of SepoliaNet:
+      bootstrapNodes.setBootnodes(SepoliaBootnodes)
+    else:
+      # custom network id
+      discard
+
+  # always allow bootstrap nodes provided by the user
   if conf.bootstrapNodes.len > 0:
-    result.append(conf.bootstrapNodes)
+    bootstrapNodes.append(conf.bootstrapNodes)
 
-  loadBootstrapFile(string conf.bootstrapFile, result)
+  # bootstrap nodes loaded from file might append or
+  # override built-in bootnodes
+  loadBootstrapFile(string conf.bootstrapFile, bootstrapNodes)
 
-proc getStaticPeers*(conf: NimbusConf): seq[ENode] =
-  result.append(conf.staticPeers)
-  loadStaticPeersFile(string conf.staticPeersFile, result)
+  # Bootstrap nodes provided as ENRs
+  for enr in conf.bootstrapEnrs:
+    let enode = Enode.fromEnr(enr).valueOr:
+      fatal "Invalid bootstrap ENR provided", error
+      quit 1
 
-proc getAllowedOrigins*(conf: NimbusConf): seq[Uri] =
+    bootstrapNodes.add(enode)
+
+  bootstrapNodes
+
+proc getStaticPeers*(conf: NimmevConf): seq[ENode] =
+  var staticPeers: seq[ENode]
+  staticPeers.append(conf.staticPeers)
+  loadStaticPeersFile(string conf.staticPeersFile, staticPeers)
+
+  # Static peers provided as ENRs
+  for enr in conf.staticPeersEnrs:
+    let enode = Enode.fromEnr(enr).valueOr:
+      fatal "Invalid static peer ENR provided", error
+      quit 1
+
+    staticPeers.add(enode)
+
+  staticPeers
+
+proc getAllowedOrigins*(conf: NimmevConf): seq[Uri] =
   for item in repeatingList(conf.allowedOrigins):
     result.add parseUri(item)
 
+# KLUDGE: The `load()` template does currently not work within any exception
+#         annotated environment.
 {.pop.}
 
-proc makeConfig*(cmdLine = commandLineParams()): NimbusConf
-    {.raises: [CatchableError].} =
+proc makeConfig*(cmdLine = commandLineParams()): NimmevConf {.raises: [CatchableError].} =
+  ## Note: this function is not gc-safe
+
+  # The try/catch clause can go away when `load()` is clean
   try:
     {.push warning[ProveInit]: off.}
-    result = NimbusConf.load(
-      cmdLine,
-      version = NimbusBuild,
-      copyrightBanner = NimbusHeader
-    )
+    result = NimmevConf.load(cmdLine,version = NimbusBuild,copyrightBanner = NimbusHeader)
     {.pop.}
   except CatchableError as e:
     raise e
@@ -687,28 +799,46 @@ proc makeConfig*(cmdLine = commandLineParams()): NimbusConf
 
   var networkId = result.getNetworkId()
 
+  if result.customNetwork.isSome:
+    result.networkParams = result.customNetwork.get()
+    if networkId.isNone:
+      networkId = some(NetworkId(result.networkParams.config.chainId))
+
   if networkId.isNone:
-    networkId = some MainNet
+    networkId = some BSC
 
   result.networkId = networkId.get()
 
+  if result.customNetwork.isNone:
+    result.networkParams = networkParams(result.networkId)
+
   if result.cmd == noCommand:
+    # ttd from cli takes precedence over ttd from config-file
+    if result.terminalTotalDifficulty.isSome:
+      result.networkParams.config.terminalTotalDifficulty =
+        result.terminalTotalDifficulty
+
     if result.udpPort == Port(0):
+      # if udpPort not set in cli, then
       result.udpPort = result.tcpPort
 
+    # enable rpc server or ws server if they share common port with engine api
     let rpcMustEnabled = result.engineApiEnabled and (result.engineApiPort == result.rpcPort)
     let wsMustEnabled = result.engineApiWsEnabled and (result.engineApiWsPort == result.wsPort)
 
     result.rpcEnabled = result.rpcEnabled or rpcMustEnabled
     result.wsEnabled = result.wsEnabled or wsMustEnabled
 
+  # see issue #1346
   if result.keyStore.string == defaultKeystoreDir() and
      result.dataDir.string != defaultDataDir():
     result.keyStore = OutDir(result.dataDir.string / "keystore")
 
+  # For consistency
   if result.syncCtrlFile.isSome and result.syncCtrlFile.unsafeGet == "":
     error "Argument missing", option="sync-ctrl-file"
     quit QuitFailure
 
 when isMainModule:
+  # for testing purpose
   discard makeConfig()

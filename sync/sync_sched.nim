@@ -7,7 +7,7 @@ import
   eth/[keys, p2p, p2p/peer_pool],
   stew/keyed_queue,
   "."/[handlers, sync_desc],
-  ../protocols
+  ./protocol
 
 static:
   # type `EthWireRef` is needed in `initSync()`

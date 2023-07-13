@@ -146,10 +146,9 @@ proc setCanonical*(c: ChainRef, header: BlockHeader): ValidationResult {.gcsafe,
 
 proc setCanonical*(c: ChainRef, blockHash: Hash256): ValidationResult {.gcsafe, raises: [CatchableError].} =
   var header: BlockHeader
-  # if not c.db.getBlockHeader(blockHash, header):
-  #   debug "Failed to get BlockHeader",
-  #     hash = blockHash
-  #   return ValidationResult.Error
+  if not c.db.getBlockHeader(blockHash, header):
+    error "Failed to get BlockHeader", hash = blockHash
+    return ValidationResult.Error
 
   setCanonical(c, header)
 

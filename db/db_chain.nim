@@ -85,7 +85,7 @@ proc getCanonicalHead*(db: ChainDBRef): BlockHeader =
   # info "getCanonicalHead", hashKey=hashKey.toOpenArray
   
   var gotHash = db.getHash(hashKey, headHash)
-  info "getCanonicalHead", headHash=headHash
+  # info "getCanonicalHead", headHash=headHash
 
   var gotHeader = db.getBlockHeader(headHash, result)
   # info "getCanonicalHead", header=result
@@ -442,7 +442,7 @@ proc persistHeaderToDb*(db: ChainDBRef;header: BlockHeader;forceCanonical: bool;
   if not isStartOfHistory and not db.headerExists(header.parentHash):
     raise newException(ParentNotFound, "Cannot persist block header " & $headerHash & " with unknown parent " & $header.parentHash)
   var headerHashKey = genericHashKey(headerHash)
-  # info "persistHeaderToDb", headerHashKey=headerHashKey,headerHash=headerHash
+  info "persistHeaderToDb", headerHashKey=headerHashKey, headerHash=headerHash, forceCanonical=forceCanonical
   db.db.put(headerHashKey.toOpenArray, rlp.encode(header))
 
   let score = if isStartOfHistory: header.difficulty else: db.getScore(header.parentHash) + header.difficulty

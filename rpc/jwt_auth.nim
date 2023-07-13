@@ -194,7 +194,7 @@ proc jwtGenSecret*(rng: ref rand.HmacDrbgContext): JwtGenSecret =
 
 proc jwtSharedSecret*(
     rndSecret: JwtGenSecret;
-    config: NimbusConf;
+    config: NimmevConf;
       ): Result[JwtSharedKey, JwtError]
       {.gcsafe, raises: [CatchableError].}=
   ## Return a key for jwt authentication preferable from the argument file
@@ -253,7 +253,7 @@ proc jwtSharedSecret*(
   except ValueError:
     return err(jwtKeyInvalidHexString)
 
-proc jwtSharedSecret*(rng: ref rand.HmacDrbgContext; config: NimbusConf):
+proc jwtSharedSecret*(rng: ref rand.HmacDrbgContext; config: NimmevConf):
                     Result[JwtSharedKey, JwtError]
     {.gcsafe, raises: [CatchableError].} =
   ## Variant of `jwtSharedSecret()` with explicit random generator argument.

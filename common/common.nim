@@ -76,8 +76,8 @@ proc consensusTransition(com: CommonRef, fork: HardFork) =
     com.consensusType = com.config.consensusType
 
 proc setForkId(com: CommonRef, blockZero: BlockHeader) =
-  com.genesisHash = blockZero.blockHash
-  # com.genesisHash = Hash256.fromHex"0D21840ABFF46B96C84B2AC9E10E4F5CDAEB5693CB665DB62A2F3B02D2D57B5B"
+  # com.genesisHash = blockZero.blockHash
+  com.genesisHash = Hash256.fromHex"0D21840ABFF46B96C84B2AC9E10E4F5CDAEB5693CB665DB62A2F3B02D2D57B5B"
   let genesisCRC = crc32(0, com.genesisHash.data)
   com.forkIds = calculateForkIds(com.config, genesisCRC)
 
@@ -88,33 +88,28 @@ proc daoCheck(conf: ChainConfig) =
   if conf.daoForkSupport and conf.daoForkBlock.isNone:
     conf.daoForkBlock = conf.homesteadBlock
 
-proc init(com      : CommonRef,
-          db       : TrieDatabaseRef,
-          pruneTrie: bool,
-          networkId: NetworkId,
-          config   : ChainConfig,
-          genesis  : Genesis) {.gcsafe, raises: [CatchableError].} =
+proc init(com: CommonRef,db: TrieDatabaseRef,pruneTrie: bool,networkId: NetworkId,config   : ChainConfig,genesis  : Genesis) {.gcsafe, raises: [CatchableError].} =
+  {.gcsafe.}:
+    config.daoCheck()
 
-  config.daoCheck()
+    com.db          = ChainDBRef.new(db)
+    com.pruneTrie   = pruneTrie
+    com.config      = config
+    com.forkTransitionTable = config.toForkTransitionTable()
+    com.networkId   = networkId
+    com.syncProgress= SyncProgress()
 
-  com.db          = ChainDBRef.new(db)
-  com.pruneTrie   = pruneTrie
-  com.config      = config
-  com.forkTransitionTable = config.toForkTransitionTable()
-  com.networkId   = networkId
-  com.syncProgress= SyncProgress()
+    const TimeZero = fromUnix(0)
+    com.hardForkTransition(ForkDeterminationInfo(blockNumber: 0.toBlockNumber, td: some(0.u256), time: some(TimeZero)))
 
-  const TimeZero = fromUnix(0)
-  com.hardForkTransition(ForkDeterminationInfo(blockNumber: 0.toBlockNumber, td: some(0.u256), time: some(TimeZero)))
+    if not genesis.isNil:
+      com.genesisHeader = toGenesisHeader(genesis, com.currentFork, com.db.db)
+      com.setForkId(com.genesisHeader)
 
-  if genesis.isNil.not:
-    com.genesisHeader = toGenesisHeader(genesis, com.currentFork, com.db.db)
-    com.setForkId(com.genesisHeader)
+    com.poa = newClique(com.db, com.cliquePeriod, com.cliqueEpoch)
+    com.pos = CasperRef.new
 
-  com.poa = newClique(com.db, com.cliquePeriod, com.cliqueEpoch)
-  com.pos = CasperRef.new
-
-  com.startOfHistory = GENESIS_PARENT_HASH
+    com.startOfHistory = GENESIS_PARENT_HASH
 
 proc getTd(com: CommonRef, blockHash: Hash256): Option[DifficultyInt] =
   var td: DifficultyInt
@@ -136,18 +131,17 @@ proc getTdIfNecessary(com: CommonRef, blockHash: Hash256): Option[DifficultyInt]
 proc new*(_: type CommonRef,
           db: TrieDatabaseRef,
           pruneTrie: bool = true,
-          networkId: NetworkId = MainNet,
+          networkId: NetworkId = BSC,
           params = networkParams(BSC)): CommonRef
             {.gcsafe, raises: [CatchableError].} =
   new(result)
-  result.init(db,pruneTrie,networkId,params.config,params.genesis)
+  result.init(db,pruneTrie,networkId,params.config, params.genesis)
 
 proc new*(_: type CommonRef,
           db: TrieDatabaseRef,
           config: ChainConfig,
           pruneTrie: bool = true,
-          networkId: NetworkId = MainNet): CommonRef
-            {.gcsafe, raises: [CatchableError].} =
+          networkId: NetworkId = BSC): CommonRef {.gcsafe, raises: [CatchableError].} =
 
   new(result)
   result.init(db,pruneTrie,networkId,config,nil)
@@ -261,17 +255,17 @@ proc initializeEmptyDb*(com: CommonRef) {.gcsafe, raises: [CatchableError].} =
   let trieDB = com.db.db
   var hashKey = canonicalHeadHashKey()
   var encode = rlp.encode(com.genesisHash)
-  info "initializeEmptyDb", encode=encode, genesisHeaderBlockNumber = com.genesisHeader.blockNumber
-  trieDB.put(hashKey.toOpenArray, encode)
+  info "initializeEmptyDb", encode=encode, genesisHash = com.genesisHash
 
-  # if hashKey.toOpenArray notin trieDB:
-  info "Writing genesis to DB"
-  doAssert(com.genesisHeader.blockNumber.isZero, "can't commit genesis block with number > 0")
-  discard com.db.persistHeaderToDb(com.genesisHeader, com.consensusType == ConsensusType.POS)
-  doAssert(canonicalHeadHashKey().toOpenArray in trieDB)
+  # trieDB.put(hashKey.toOpenArray, encode)
 
-proc syncReqNewHead*(com: CommonRef; header: BlockHeader)
-    {.gcsafe, raises: [].} =
+  if hashKey.toOpenArray notin trieDB:
+    info "Writing genesis to DB"
+    doAssert(com.genesisHeader.blockNumber.isZero, "can't commit genesis block with number > 0")
+    discard com.db.persistHeaderToDb(com.genesisHeader, com.consensusType == ConsensusType.POS)
+    doAssert(canonicalHeadHashKey().toOpenArray in trieDB)
+
+proc syncReqNewHead*(com: CommonRef; header: BlockHeader) {.gcsafe, raises: [].} =
   if not com.syncReqNewHead.isNil:
     com.syncReqNewHead(header)
 

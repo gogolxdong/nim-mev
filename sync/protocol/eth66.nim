@@ -102,16 +102,12 @@ p2pProtocol eth66(version = ethVersion,
         remote=(m.forkId.forkHash.toHex & "/" & $m.forkId.forkNext)
 
     if m.networkId != network.networkId:
-      info "Peer for a different network (networkId)", peer,
-        expectNetworkId=network.networkId, gotNetworkId=m.networkId
-      raise newException(
-        UselessPeerError, "Eth handshake for different network")
+      info "Peer for a different network (networkId)", peer, expectNetworkId=network.networkId, gotNetworkId=m.networkId
+      raise newException(UselessPeerError, "Eth handshake for different network")
 
     if m.genesisHash != status.genesisHash:
-      info "Peer for a different network (genesisHash)", peer,
-        expectGenesis=short(status.genesisHash), gotGenesis=short(m.genesisHash)
-      raise newException(
-        UselessPeerError, "Eth handshake for different network")
+      info "Peer for a different network (genesisHash)", peer, expectGenesis=short(status.genesisHash), gotGenesis=short(m.genesisHash)
+      raise newException(UselessPeerError, "Eth handshake for different network")
 
     info "Peer matches our network", peer
     peer.state.initialized = true

@@ -57,7 +57,7 @@ type
     signer: EthAddress
     txPool: TxPoolRef
 
-proc validateSealer*(conf: NimbusConf, ctx: EthContext, chain: ChainRef): Result[void, string] =
+proc validateSealer*(conf: NimmevConf, ctx: EthContext, chain: ChainRef): Result[void, string] =
   if conf.engineSigner == ZERO_ADDRESS:
     return err("signer address should not zero, use --engine-signer to set signer address")
 

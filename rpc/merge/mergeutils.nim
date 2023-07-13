@@ -1,12 +1,3 @@
-# Nimbus
-# Copyright (c) 2022-2023 Status Research & Development GmbH
-# Licensed under either of
-#  * Apache License, version 2.0, ([LICENSE-APACHE](LICENSE-APACHE))
-#  * MIT license ([LICENSE-MIT](LICENSE-MIT))
-# at your option.
-# This file may not be copied, modified, or distributed except according to
-# those terms.
-
 import
   std/[typetraits, times, strutils, sequtils],
   nimcrypto/[hash, sha2],
@@ -24,15 +15,10 @@ proc computePayloadId*(headBlockHash: Hash256, params: PayloadAttributesV1 | Pay
   var ctx: sha256
   ctx.init()
   ctx.update(headBlockHash.data)
-  ctx.update(toBytesBE distinctBase params.timestamp)
+  ctx.update(toBytesBE u256 distinctBase params.timestamp)
   ctx.update(distinctBase params.prevRandao)
   ctx.update(distinctBase params.suggestedFeeRecipient)
-  # FIXME-Adam: Do we need to include the withdrawals in this calculation?
-  # https://github.com/ethereum/go-ethereum/pull/25838#discussion_r1024340383
-  # "The execution api specs define that this ID can be completely random. It
-  # used to be derived from payload attributes in the past, but maybe it's
-  # time to use a randomized ID to not break it with any changes to the
-  # attributes?"
+
   ctx.finish dest.data
   ctx.clear()
   (distinctBase result)[0..7] = dest.data[0..7]
@@ -113,11 +99,11 @@ proc toBlockBody*(payload: ExecutionPayloadV1 | ExecutionPayloadV2): BlockBody =
     result.transactions[i] = rlp.decode(distinctBase tx, Transaction)
   when payload is ExecutionPayloadV2:
     let ws = payload.maybeWithdrawals
-    result.withdrawals =
-      if ws.isSome:
-        some(ws.get.map(toWithdrawal))
-      else:
-        none[seq[Withdrawal]]()
+    # result.withdrawals =
+    #   if ws.isSome:
+    #     some(ws.get.map(toWithdrawal))
+    #   else:
+    #     none[seq[Withdrawal]]()
 
 proc `$`*(x: BlockHash): string =
   toHex(x)

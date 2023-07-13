@@ -1,12 +1,3 @@
-# Nimbus
-# Copyright (c) 2018-2023 Status Research & Development GmbH
-# Licensed under either of
-#  * Apache License, version 2.0, ([LICENSE-APACHE](LICENSE-APACHE))
-#  * MIT license ([LICENSE-MIT](LICENSE-MIT))
-# at your option.
-# This file may not be copied, modified, or distributed except according to
-# those terms.
-
 import
   nimcrypto/utils, eth/common as eth_common,
   stint, json_rpc/server, json_rpc/errors,
@@ -27,7 +18,7 @@ type
     ip    : string # address string
     ports : NodePorts
 
-proc setupCommonRpc*(node: EthereumNode, conf: NimbusConf, server: RpcServer) =
+proc setupCommonRpc*(node: EthereumNode, conf: NimmevConf, server: RpcServer) =
   server.rpc("web3_clientVersion") do() -> string:
     result = conf.agentString
 

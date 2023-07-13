@@ -1,12 +1,3 @@
-# Nimbus
-# Copyright (c) 2021 Status Research & Development GmbH
-# Licensed under either of
-#  * Apache License, version 2.0, ([LICENSE-APACHE](LICENSE-APACHE))
-#  * MIT license ([LICENSE-MIT](LICENSE-MIT))
-# at your option.
-# This file may not be copied, modified, or distributed except according to
-# those terms.
-
 {.push raises: [].}
 
 import
@@ -20,6 +11,9 @@ import
 
 export
   hardforks
+
+logScope:
+  topics = "chain_config"
 
 type
   Genesis* = ref object
@@ -286,8 +280,7 @@ proc validateChainConfig*(conf: ChainConfig): bool =
     if cur.time.isSome:
       lastTimeBasedFork = cur
 
-  if conf.clique.period.isSome or
-     conf.clique.epoch.isSome:
+  if conf.clique.period.isSome or conf.clique.epoch.isSome:
     conf.consensusType = ConsensusType.POA
 
 proc validateNetworkParams*(params: var NetworkParams): bool =
@@ -391,6 +384,13 @@ proc genesisBlockForNetwork*(id: NetworkId): Genesis {.gcsafe, raises: [ValueErr
       gasLimit: 0x2625a00,
       gasUsed: 0,
       difficulty: 1.u256,
+    )
+  of MainNet:
+    Genesis(
+      nonce: 66.toBlockNonce,
+      extraData: hexToSeqByte("0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa"),
+      gasLimit: 5000,
+      difficulty: 17179869184.u256,
     )
   else:
     Genesis()

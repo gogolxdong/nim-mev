@@ -8,7 +8,7 @@ import ./db/select_backend
 import ./evm/[evmc_api,types, state]
 import ./core/chain/chain_desc, ./core/tx_pool
 import ./sync/handlers/setup
-import ./sync/[handlers,legacy]
+import ./sync/[handlers,legacy, peers]
 # import lmdb
 import rocksdb
 import sequtils
@@ -55,41 +55,45 @@ proc setupNode*(rng: ref HmacDrbgContext, capabilities: varargs[ProtocolInfo, `p
 var rng = newRng()
 var node = setupNode(rng, eth )
 var peer:Peer
+let conf = makeConfig()
 
 proc startNode() =
   node.startListening()
 
-  var res = waitFor node.rlpxConnect(newNode node5)
-  if res.isOk:
-    peer = res.get
-  else:
-    echo res.error
-    quit 1
+  # var res = waitFor node.rlpxConnect(newNode node5)
+  # if res.isOk:
+  #   peer = res.get
+  # else:
+  #   echo res.error
+  #   quit 1
 
   proc controlCHandler() {.noconv.} =
     info "\nCtrl+C pressed. Waiting for a graceful shutdown."
     node.stopListening()
     info "stopListening"
-    node.peerPool.running = false
+    node.state = Stopping
+
     if peer != nil:
       waitFor peer.disconnect(ClientQuitting, true)
       info "disconnect"
   setControlCHook(controlCHandler)
 
-  # node.peerPool.start()
-  # while node.peerPool.running:
-  #   poll()
-
-  while true:
-    if peer.connectionState != Connected:
-      break
+  let staticPeers = conf.getStaticPeers()
+  var peerManager = PeerManagerRef.new(node.peerPool, conf.reconnectInterval, conf.reconnectMaxRetry, staticPeers)
+  peerManager.start()
+  while node.peerPool.running:
     poll()
+
+  # while true:
+  #   if peer.connectionState != Connected:
+  #     break
+  #   poll()
 
 proc defaultDataDir*(): string =
   when defined(windows):
-    getCurrentDir() / "AppData" / "Roaming" / "Nimbus"
+    getCurrentDir() / "AppData" / "Roaming" / "Nimmev"
   elif defined(macosx):
-    getCurrentDir() / "Library" / "Application Support" / "Nimbus"
+    getCurrentDir() / "Library" / "Application Support" / "Nimmev"
   else:
     getCurrentDir() / ".lmdb" 
 

@@ -453,8 +453,8 @@ proc handle_getPayloadBodiesByHash(sealingEngine: SealingEngineRef, hashes: seq[
       for tx in body.transactions:
         typedTransactions.add(tx.toTypedTransaction)
       var withdrawals: seq[WithdrawalV1]
-      for w in body.withdrawals.get:
-        withdrawals.add(w.toWithdrawalV1)
+      # for w in body.withdrawals.get:
+      #   withdrawals.add(w.toWithdrawalV1)
       result.add(
         some(ExecutionPayloadBodyV1(
           transactions: typedTransactions,

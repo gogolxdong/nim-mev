@@ -397,8 +397,8 @@ method getStatus*(ctx: EthWireRef): EthState {.gcsafe, raises: [RlpError,EVMErro
 
   EthState(
     totalDifficulty: db.headTotalDifficulty,
-    genesisHash: com.genesisHash,
-    # genesisHash: Hash256.fromHex"0D21840ABFF46B96C84B2AC9E10E4F5CDAEB5693CB665DB62A2F3B02D2D57B5B",
+    # genesisHash: com.genesisHash,
+    genesisHash: Hash256.fromHex"0D21840ABFF46B96C84B2AC9E10E4F5CDAEB5693CB665DB62A2F3B02D2D57B5B",
     bestBlockHash: bestBlock.blockHash,
     forkId: ChainForkId(
       forkHash: [byte(41),149,197,42], #forkId.crc.toBytesBE,
@@ -454,7 +454,7 @@ method getBlockHeaders*(ctx: EthWireRef, req: BlocksRequest): seq[BlockHeader] {
       result.add foundBlock
 
 method handleAnnouncedTxs*(ctx: EthWireRef, peer: Peer, txs: openArray[Transaction]) {.gcsafe, raises: [CatchableError].} =
-  info "handleAnnouncedTxs", peer=peer, txs=txs.len, txHashes = txs.mapIt(it.itemID())
+  # info "handleAnnouncedTxs", peer=peer, txs=txs.len, txHashes = txs.mapIt(it.itemID())
   if ctx.enableTxPool != Enabled:
     when trMissingOrDisabledGossipOk:
       notEnabled("handleAnnouncedTxs")
@@ -465,7 +465,6 @@ method handleAnnouncedTxs*(ctx: EthWireRef, peer: Peer, txs: openArray[Transacti
 
   try:
     let header = ctx.chain.currentBlock()
-    # info "handleAnnouncedTxs", parentHash=header.parentHash, headerHash=header.blockHash, txs=txs.len
     var vmState = BaseVMState.new(header, ctx.chain.com)
     let fork = vmState.com.toEVMFork(header.forkDeterminationInfoForHeader)
     let accountDB = newAccountStateDB(ctx.db.db, header.stateRoot, ctx.chain.com.pruneTrie)
@@ -581,10 +580,10 @@ method handleNewBlock*(ctx: EthWireRef, peer: Peer, blk: EthBlock, totalDifficul
   if res == ValidationResult.Error:
       error "handleNewBlock: persistBlocks error"
       return
-  res = ctx.chain.setCanonical(blk.header)
-  if res == ValidationResult.Error:
-    error "setCanonical", err=res
-    return
+  # res = ctx.chain.setCanonical(blk.header)
+  # if res == ValidationResult.Error:
+  #   error "setCanonical", err=res
+  #   return
   info "handleNewBlock", peer=peer, blk=blk.header.blockNumber, totalDifficulty=totalDifficulty
   if not ctx.newBlockHandler.handler.isNil:
     ctx.newBlockHandler.handler(ctx.newBlockHandler.arg, peer, blk, totalDifficulty)
